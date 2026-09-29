@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     model_repo_id: str = "Turhan123/astra-meal-parser-gguf"
     model_filename: str = "astra-meal-parser-1.5b-q4_k_m.gguf"
     model_dir: Path = Path("models")
+    parser_use_grammar: bool = False
     embedding_model_name: str = (
         "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     )
