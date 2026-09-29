@@ -1,0 +1,26 @@
+# Runtime dependencies (installed into the Docker image).
+# Direct dependencies are pinned exactly; transitive ones are resolved by pip.
+
+# CPU-only PyTorch wheels. sentence-transformers needs torch, and the default
+# Linux wheel on PyPI pulls several GB of CUDA libraries we never use.
+# On Linux, pip prefers "2.14.0+cpu" from this index over PyPI's "2.14.0".
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# Web service
+fastapi==0.141.1
+uvicorn[standard]==0.54.0
+pydantic==2.13.5
+pydantic-settings==2.15.0
+
+# Parser inference: GGUF model via llama.cpp (compiles C++ on install)
+llama-cpp-python==0.3.35
+huggingface-hub==1.33.0
+
+# Embeddings (paraphrase-multilingual-MiniLM-L12-v2)
+sentence-transformers==6.1.0
+torch==2.14.0
+
+# PostgreSQL + pgvector
+psycopg[binary]==3.3.6
+psycopg-pool==3.3.3
+pgvector==0.5.0

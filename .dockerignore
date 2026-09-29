@@ -1,0 +1,32 @@
+# Everything listed here is excluded from the Docker build context.
+# Docker does NOT read .gitignore, so exclusions must be repeated here.
+
+# Model weights and caches: mounted as volumes, never baked into the image
+models/
+*.gguf
+.cache/
+
+# Secrets: passed to the container at runtime via env_file
+.env
+
+# VCS and Python tooling
+.git/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Not needed inside the runtime image
+tests/
+eval/
+.github/
+pgdata/
+*.md
+.DS_Store
+.vscode/
+.idea/

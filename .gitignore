@@ -1,0 +1,26 @@
+# Secrets
+.env
+
+# Model weights and caches (downloaded at runtime, mounted as volumes in Docker)
+models/
+*.gguf
+.cache/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local database data
+pgdata/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

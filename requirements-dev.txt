@@ -1,0 +1,6 @@
+# Development and CI dependencies (never installed into the Docker image).
+-r requirements.txt
+
+ruff==0.16.9
+pytest==9.1.1
+httpx==0.28.1  # required by FastAPI's TestClient
