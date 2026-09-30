@@ -1,0 +1,183 @@
+food_id,unit,grams,source
+egg,piece,50.0,usda: large
+egg,cup,243.0,usda: cup (4.86 large eggs)
+egg_boiled,piece,50.0,usda: large
+egg_boiled,tbsp,8.5,usda: tbsp
+egg_fried,piece,46.0,usda: large
+chicken_breast,piece,172.0,"usda: breast, bone and skin removed"
+chicken_breast,cup,140.0,"usda: cup, chopped or diced"
+chicken_thigh,piece,116.0,usda: thigh without skin
+tuna_canned,cup,154.0,"usda: cup, solid or chunks"
+sardines,piece,12.0,usda: sardines
+mackerel,piece,88.0,usda: fillet
+sea_bass,piece,101.0,usda: fillet
+milk_whole,cup,244.0,usda: cup
+milk_whole,tbsp,15.0,usda: tbsp
+milk_reduced_fat,cup,244.0,usda: cup
+yogurt,cup,245.0,usda: cup (8 fl oz)
+yogurt,bowl,200.0,assumption
+yogurt,glass,200.0,assumption
+yogurt_low_fat,cup,245.0,usda: cup (8 fl oz)
+yogurt_low_fat,bowl,200.0,assumption
+yogurt_low_fat,glass,200.0,assumption
+greek_yogurt,bowl,200.0,assumption
+feta,slice,30.0,assumption
+feta,cup,150.0,"usda: cup, crumbled"
+mozzarella,slice,28.33,usda: slices
+mozzarella,cup,112.0,"usda: cup, shredded"
+cream_cheese,tbsp,14.5,usda: tbsp
+butter,tbsp,14.2,usda: tbsp
+butter,tsp,5.0,assumption
+kefir,cup,243.0,usda: cup
+rice,cup,158.0,usda: cup
+rice,bowl,150.0,assumption
+rice,plate,200.0,assumption
+brown_rice,cup,202.0,usda: cup
+brown_rice,plate,200.0,assumption
+bulgur,cup,182.0,usda: cup
+bulgur,tbsp,8.4,usda: tbsp
+bulgur,plate,200.0,assumption
+pasta,cup,124.0,usda: cup spaghetti not packed
+pasta,plate,250.0,assumption
+couscous,cup,157.0,"usda: cup, cooked"
+oats,cup,81.0,usda: cup
+oats,tbsp,5.0,assumption
+white_bread,slice,29.0,usda: slice
+whole_wheat_bread,slice,32.0,usda: slice
+pita,piece,60.0,"usda: pita, large (6-1/2"" dia)"
+bagel,piece,99.0,usda: bagel
+lentils,cup,198.0,usda: cup
+lentils,tbsp,12.3,usda: tbsp
+chickpeas,cup,164.0,usda: cup
+white_beans,cup,179.0,usda: cup
+white_beans,tbsp,11.2,usda: tbsp
+white_beans,plate,250.0,assumption
+kidney_beans,cup,177.0,usda: cup
+kidney_beans,tbsp,11.0,usda: tbsp
+hummus,tbsp,15.0,usda: tbsp
+hummus,cup,246.0,usda: cup
+tomato,piece,123.0,"usda: medium whole (2-3/5"" dia)"
+tomato,slice,20.0,"usda: slice, medium (1/4"" thick)"
+tomato,cup,180.0,"usda: cup, chopped or sliced"
+cucumber,piece,120.0,assumption
+cucumber,cup,104.0,usda: cup slices
+green_pepper,piece,119.0,"usda: medium (approx 2-3/4"" long, 2-1/2"" dia)"
+green_pepper,cup,149.0,"usda: cup, chopped"
+red_pepper,piece,119.0,"usda: medium (approx 2-3/4"" long, 2-1/2 dia.)"
+red_pepper,cup,149.0,"usda: cup, chopped"
+onion,piece,110.0,"usda: medium (2-1/2"" dia)"
+onion,slice,14.0,"usda: slice, medium (1/8"" thick)"
+onion,cup,160.0,"usda: cup, chopped"
+onion,tbsp,10.0,usda: tbsp chopped
+potato_boiled,piece,136.0,"usda: potato (2-1/2"" dia, sphere)"
+potato_boiled,cup,156.0,usda: cup
+potato_baked,piece,173.0,usda: potato medium
+carrot,piece,61.0,usda: medium
+carrot,cup,128.0,usda: cup chopped
+lettuce,cup,47.0,usda: cup shredded
+spinach,cup,180.0,usda: cup
+eggplant,cup,99.0,"usda: cup (1"" cubes)"
+zucchini,piece,196.0,usda: medium
+zucchini,slice,9.9,usda: slice
+zucchini,cup,124.0,"usda: cup, chopped"
+broccoli,cup,91.0,usda: cup chopped
+cauliflower,cup,107.0,"usda: cup chopped (1/2"" pieces)"
+cabbage,cup,89.0,"usda: cup, chopped"
+mushrooms,piece,18.0,usda: medium
+mushrooms,cup,70.0,"usda: cup, pieces or slices"
+green_beans,cup,125.0,usda: cup
+green_beans,plate,200.0,assumption
+corn,cup,164.0,usda: cup
+peas,cup,160.0,usda: cup
+garlic,piece,3.0,usda: clove
+garlic,tsp,2.8,usda: tsp
+parsley,tbsp,3.8,usda: tbsp
+parsley,cup,60.0,usda: cup chopped
+black_olives,piece,4.4,usda: large
+black_olives,tbsp,8.4,usda: tbsp
+green_olives,piece,2.7,usda: olive
+arugula,cup,20.0,usda: cup
+leek,piece,89.0,usda: leek
+leek,cup,89.0,usda: cup
+apple,piece,182.0,"usda: medium (3"" dia)"
+banana,piece,118.0,"usda: medium (7"" to 7-7/8"" long)"
+orange,piece,131.0,"usda: fruit (2-5/8"" dia)"
+mandarin,piece,88.0,"usda: medium (2-1/2"" dia)"
+grapes,piece,4.9,usda: grapes
+grapes,cup,151.0,usda: cup
+grapes,handful,50.0,assumption
+watermelon,slice,286.0,usda: wedge (approx 1/16 of melon)
+watermelon,cup,152.0,"usda: cup, diced"
+melon,slice,125.0,"usda: wedge (1/8 of 5-1/4"" dia melon)"
+strawberries,piece,12.0,"usda: medium (1-1/4"" dia)"
+strawberries,cup,144.0,"usda: cup, whole"
+cherries,piece,8.2,usda: cherry
+cherries,cup,154.0,"usda: cup, without pits"
+cherries,handful,70.0,assumption
+peach,piece,150.0,"usda: medium (2-2/3"" dia)"
+pear,piece,178.0,usda: medium
+apricot,piece,35.0,usda: apricot
+dried_apricots,piece,7.0,assumption
+fig,piece,50.0,"usda: medium (2-1/4"" dia)"
+dried_figs,piece,8.4,usda: fig
+dates,piece,24.0,"usda: date, pitted"
+pomegranate,piece,282.0,"usda: pomegranate (4"" dia)"
+pomegranate,cup,174.0,usda: cup arils (seed/juice sacs)
+kiwi,piece,69.0,"usda: fruit (2"" dia)"
+plum,piece,66.0,"usda: fruit (2-1/8"" dia)"
+avocado,piece,201.0,"usda: avocado, NS as to Florida or California"
+walnuts,piece,4.0,assumption
+walnuts,handful,30.0,assumption
+walnuts,cup,100.0,usda: cup shelled (50 halves)
+almonds,piece,1.2,usda: almond
+almonds,handful,30.0,assumption
+almonds,cup,143.0,"usda: cup, whole"
+hazelnuts,piece,1.4,usda: nuts
+hazelnuts,handful,30.0,assumption
+hazelnuts,cup,135.0,"usda: cup, whole"
+pistachios,piece,0.7,usda: kernel
+pistachios,handful,30.0,assumption
+pistachios,cup,123.0,usda: cup
+peanuts,piece,1.0,usda: peanut
+peanuts,handful,30.0,assumption
+peanuts,cup,146.0,usda: cup
+sunflower_seeds,cup,140.0,usda: cup
+sunflower_seeds,handful,25.0,assumption
+pumpkin_seeds,cup,118.0,usda: cup
+pumpkin_seeds,handful,25.0,assumption
+tahini,tbsp,15.0,usda: tbsp
+peanut_butter,tbsp,16.0,usda: tbsp
+peanut_butter,cup,258.0,usda: cup
+olive_oil,tbsp,13.5,usda: tablespoon
+olive_oil,tsp,4.5,usda: tsp
+sunflower_oil,tbsp,13.6,usda: tbsp
+sunflower_oil,tsp,4.5,usda: tsp
+sugar,piece,2.3,usda: serving 1 cube
+sugar,tsp,4.2,usda: tsp
+sugar,cup,200.0,usda: cup
+honey,tbsp,21.0,usda: tbsp
+honey,cup,339.0,usda: cup
+jam,tbsp,20.0,usda: tbsp
+milk_chocolate,piece,44.0,usda: bar (1.55 oz)
+dark_chocolate,piece,101.0,usda: bar
+molasses,tbsp,20.0,usda: serving 1 tbsp
+molasses,cup,337.0,usda: cup
+mayonnaise,tbsp,13.8,usda: tbsp
+ketchup,tbsp,17.0,usda: tbsp
+black_tea,cup,237.0,usda: cup (8 fl oz)
+black_tea,glass,100.0,assumption
+green_tea,cup,245.0,usda: cup
+coffee,cup,237.0,usda: cup (8 fl oz)
+orange_juice,cup,248.0,usda: cup
+apple_juice,cup,248.0,usda: cup
+cola,piece,370.0,usda: can or bottle (12 fl oz)
+beer,piece,356.0,usda: can
+chicken_broth,cup,249.0,usda: cup
+chicken_broth,bowl,250.0,assumption
+chicken_noodle_soup,cup,248.0,usda: serving 1 cup
+chicken_noodle_soup,bowl,250.0,assumption
+tomato_soup,cup,248.0,usda: serving 1 cup
+tomato_soup,bowl,250.0,assumption
+hamburger,piece,78.0,usda: sandwich
+pizza,slice,81.0,usda: serving 9 servings per 24 oz package
+potato_chips,piece,1.27,usda: chips

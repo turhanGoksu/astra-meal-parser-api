@@ -24,3 +24,6 @@ pgdata/
 .DS_Store
 .vscode/
 .idea/
+
+# Raw third-party downloads (large, reproducible via scripts)
+data/raw/

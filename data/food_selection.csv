@@ -1,0 +1,122 @@
+id,fdc_id,name_en,name_tr,aliases,default_grams,portions,note
+egg,171287,Egg,Yumurta,eggs|whole egg,50,"piece=usda:large;cup=usda:cup",
+egg_boiled,173424,Hard-boiled egg,Haşlanmış yumurta,boiled egg|katı yumurta|rafadan yumurta,50,"piece=usda:large;tbsp=usda:tbsp",
+egg_fried,173423,Fried egg,Sahanda yumurta,yağda yumurta|kızarmış yumurta,46,"piece=usda:large",
+chicken_breast,171477,Chicken breast,Tavuk göğsü,tavuk fileto|chicken fillet,120,"piece=usda:breast;cup=usda:cup, chopped or diced",
+chicken_thigh,172388,Chicken thigh,Tavuk but,tavuk budu,100,"piece=usda:thigh without skin",
+ground_beef,171799,Ground beef,Dana kıyma,kıyma|minced beef|beef mince,100,,80% lean; cooked
+beef_steak,168729,Beef steak,Biftek,dana biftek|steak|sirloin steak,150,,
+ground_lamb,172544,Ground lamb,Kuzu kıyma,minced lamb,100,,
+salmon,175168,Salmon,Somon,somon balığı|salmon fillet,150,,
+tuna_canned,173709,Canned tuna,Ton balığı,konserve ton balığı|tuna,100,"cup=usda:cup, solid or chunks",canned in water; drained
+anchovy,174182,Anchovy,Hamsi,hamsi balığı|european anchovy,150,,raw values; fried hamsi also has coating and oil
+sardines,175139,Sardines,Sardalya,sardine|sardalya balığı,90,"piece=usda:sardines",canned in oil; drained
+mackerel,175120,Mackerel,Uskumru,uskumru balığı,150,"piece=usda:fillet",
+sea_bass,173694,Sea bass,Levrek,levrek balığı,150,"piece=usda:fillet",
+turkey_breast,171496,Turkey breast,Hindi göğsü,hindi fileto|hindi,100,,
+milk_whole,171265,Whole milk,Tam yağlı süt,süt|milk|inek sütü,200,"cup=usda:cup;tbsp=usda:tbsp;density=usda:cup",
+milk_reduced_fat,171267,Reduced-fat milk,Yarım yağlı süt,light süt|low-fat milk|2% milk,200,"cup=usda:cup;density=usda:cup",USDA 2% milk; Turkish semi-skimmed is about 1.5%
+yogurt,171284,Plain yogurt,Yoğurt,yogurt|yoghurt|sade yoğurt|tam yağlı yoğurt,150,"cup=usda:cup (8 fl oz);bowl=200;glass=200",bowl and glass are assumptions
+yogurt_low_fat,170886,Low-fat yogurt,Az yağlı yoğurt,light yoğurt|low-fat yogurt,150,"cup=usda:cup (8 fl oz);bowl=200;glass=200",bowl and glass are assumptions
+greek_yogurt,171304,Greek yogurt,Süzme yoğurt,strained yogurt|greek yoghurt,150,"bowl=200",bowl is an assumption
+feta,173420,Feta cheese,Beyaz peynir,feta|white cheese|ezine peyniri,30,"slice=30;cup=usda:cup, crumbled",slice is an assumption (Turkish breakfast slice)
+mozzarella,170845,Mozzarella,Mozzarella peyniri,mozarella,30,"slice=usda:slices;cup=usda:cup, shredded",
+cream_cheese,173418,Cream cheese,Krem peynir,labne|labne peyniri,30,"tbsp=usda:tbsp",Turkish labne is a cream-cheese-style spread
+butter,173410,Butter,Tereyağı,tereyağ,10,"tbsp=usda:tbsp;tsp=5",tsp is an assumption
+kefir,170904,Kefir,Kefir,,200,"cup=usda:cup;density=usda:cup",
+ice_cream,167575,Vanilla ice cream,Dondurma,ice cream|vanilyalı dondurma,100,,
+rice,168878,Cooked white rice,Pirinç pilavı,pilav|pirinç|beyaz pirinç|rice|white rice,150,"cup=usda:cup;bowl=150;plate=200",pilav approximated as plain cooked rice (no added butter or oil); bowl and plate are assumptions
+brown_rice,169704,Cooked brown rice,Esmer pirinç,kahverengi pirinç|brown rice,150,"cup=usda:cup;plate=200",plate is an assumption
+bulgur,170287,Cooked bulgur,Bulgur pilavı,bulgur,150,"cup=usda:cup;tbsp=usda:tbsp;plate=200",approximated as plain cooked bulgur (no added oil); plate is an assumption
+pasta,169737,Cooked pasta,Makarna,pasta|spaghetti|spagetti,180,"cup=usda:cup spaghetti not packed;plate=250",plain cooked pasta (no sauce); plate is an assumption
+couscous,169700,Cooked couscous,Kuskus,couscous,150,"cup=usda:cup, cooked",
+oats,173904,Rolled oats (dry),Yulaf ezmesi,yulaf|rolled oats,40,"cup=usda:cup;tbsp=5",dry weight; cooked oatmeal is not in the table; tbsp is an assumption
+white_bread,174924,White bread,Beyaz ekmek,ekmek|bread|francala|somun ekmek,50,"slice=usda:slice",
+whole_wheat_bread,172688,Whole-wheat bread,Tam buğday ekmeği,kepekli ekmek|tam buğdaylı ekmek|whole wheat bread,60,"slice=usda:slice",
+pita,174915,Pita bread,Pita ekmeği,pita|pide ekmeği,60,"piece=usda:pita, large",
+bagel,174899,Bagel,Bagel,bagels,99,"piece=usda:bagel",
+lentils,172421,Cooked lentils,Haşlanmış mercimek,mercimek|lentils|yeşil mercimek,150,"cup=usda:cup;tbsp=usda:tbsp",
+chickpeas,173757,Cooked chickpeas,Haşlanmış nohut,nohut|chickpeas|garbanzo beans,150,"cup=usda:cup",
+white_beans,175203,Cooked white beans,Haşlanmış kuru fasulye,kuru fasulye|beyaz fasulye|white beans|navy beans,180,"cup=usda:cup;tbsp=usda:tbsp;plate=250",kuru fasulye dish approximated as boiled beans (no added oil or tomato paste); plate is an assumption
+kidney_beans,173740,Cooked kidney beans,Haşlanmış kırmızı fasulye,kırmızı fasulye|kidney beans,150,"cup=usda:cup;tbsp=usda:tbsp",
+hummus,174289,Hummus,Humus,hummus,50,"tbsp=usda:tbsp;cup=usda:cup",
+tomato,170457,Tomato,Domates,tomatoes,123,"piece=usda:medium whole;slice=usda:slice, medium;cup=usda:cup, chopped or sliced",
+cucumber,168409,Cucumber,Salatalık,hıyar|cucumbers,120,"piece=120;cup=usda:cup slices",piece is an assumption (Turkish cucumbers are smaller than the USDA 301 g reference)
+green_pepper,170427,Green bell pepper,Yeşil dolmalık biber,dolmalık biber|yeşil biber|green bell pepper,119,"piece=usda:medium;cup=usda:cup, chopped",
+red_pepper,170108,Red bell pepper,Kırmızı kapya biber,kapya biber|red bell pepper,119,"piece=usda:medium;cup=usda:cup, chopped",
+onion,170000,Onion,Soğan,kuru soğan|onions,50,"piece=usda:medium;slice=usda:slice, medium;cup=usda:cup, chopped;tbsp=usda:tbsp chopped",
+potato_boiled,170438,Boiled potato,Haşlanmış patates,haşlama patates|boiled potatoes,136,"piece=usda:potato;cup=usda:cup",
+potato_baked,170093,Baked potato,Fırında patates,fırın patates|baked potatoes,173,"piece=usda:potato medium",
+french_fries,170698,French fries,Patates kızartması,kızarmış patates|fries,117,,
+carrot,170393,Carrot,Havuç,carrots,61,"piece=usda:medium;cup=usda:cup chopped",
+lettuce,169247,Romaine lettuce,Marul,lettuce|göbek marul,50,"cup=usda:cup shredded",
+spinach,168463,Cooked spinach,Ispanak,spinach|haşlanmış ıspanak,150,"cup=usda:cup",plain boiled spinach (no added oil)
+eggplant,169229,Cooked eggplant,Patlıcan,eggplant|aubergine,100,"cup=usda:cup",plain boiled eggplant (no added oil)
+zucchini,169291,Zucchini,Kabak,sakız kabağı|courgette,100,"piece=usda:medium;slice=usda:slice;cup=usda:cup, chopped",
+broccoli,170379,Broccoli,Brokoli,,90,"cup=usda:cup chopped",
+cauliflower,169986,Cauliflower,Karnabahar,,100,"cup=usda:cup chopped",
+cabbage,169975,Cabbage,Lahana,beyaz lahana,90,"cup=usda:cup, chopped",
+mushrooms,169251,Mushrooms,Mantar,kültür mantarı|champignon,70,"piece=usda:medium;cup=usda:cup, pieces or slices",
+green_beans,169141,Cooked green beans,Taze fasulye,green beans|string beans,150,"cup=usda:cup;plate=200",plain boiled beans (no added olive oil); plate is an assumption
+corn,169214,Sweet corn (canned),Mısır,konserve mısır|corn|sweet corn,80,"cup=usda:cup",
+peas,170017,Green peas,Bezelye,peas|green peas,80,"cup=usda:cup",
+garlic,169230,Garlic,Sarımsak,,3,"piece=usda:clove;tsp=usda:tsp",
+parsley,170416,Parsley,Maydanoz,,10,"tbsp=usda:tbsp;cup=usda:cup chopped",
+black_olives,169094,Black olives,Siyah zeytin,black olives,30,"piece=usda:large;tbsp=usda:tbsp",
+green_olives,169096,Green olives,Yeşil zeytin,green olives,30,"piece=usda:olive",
+arugula,169387,Arugula,Roka,rocket,20,"cup=usda:cup",
+leek,169246,Leek,Pırasa,leeks,89,"piece=usda:leek;cup=usda:cup",
+apple,171688,Apple,Elma,apples,182,"piece=usda:medium",
+banana,173944,Banana,Muz,bananas,118,"piece=usda:medium",
+orange,169097,Orange,Portakal,oranges,131,"piece=usda:fruit",
+mandarin,169105,Mandarin,Mandalina,tangerine|mandarin orange,88,"piece=usda:medium",
+grapes,174683,Grapes,Üzüm,yaş üzüm,150,"piece=usda:grapes;cup=usda:cup;handful=50",handful is an assumption
+watermelon,167765,Watermelon,Karpuz,,286,"slice=usda:wedge;cup=usda:cup, diced",slice = USDA wedge (1/16 of a melon)
+melon,169911,Melon,Kavun,honeydew|honeydew melon,160,"slice=usda:wedge",slice = USDA wedge; honeydew used for Turkish kavun
+strawberries,167762,Strawberries,Çilek,strawberry,150,"piece=usda:medium;cup=usda:cup, whole",
+cherries,171719,Sweet cherries,Kiraz,cherries,140,"piece=usda:cherry;cup=usda:cup, without pits;handful=70",handful is an assumption
+peach,169928,Peach,Şeftali,peaches,150,"piece=usda:medium",
+pear,169118,Pear,Armut,pears,178,"piece=usda:medium",
+apricot,171697,Apricot,Kayısı,taze kayısı|apricots,105,"piece=usda:apricot",
+dried_apricots,173941,Dried apricots,Kuru kayısı,gün kurusu kayısı|dried apricot,30,"piece=7",piece = 2 x USDA half (3.5 g)
+fig,173021,Fig,İncir,taze incir|figs,50,"piece=usda:medium",
+dried_figs,174665,Dried figs,Kuru incir,dried fig,40,"piece=usda:fig",
+dates,168191,Medjool dates,Hurma,dates|medjool,24,"piece=usda:date",
+pomegranate,169134,Pomegranate,Nar,,150,"piece=usda:pomegranate;cup=usda:cup arils",
+kiwi,168153,Kiwi,Kivi,kiwifruit,69,"piece=usda:fruit",
+plum,169949,Plum,Erik,plums,100,"piece=usda:fruit",
+avocado,171705,Avocado,Avokado,,100,"piece=usda:avocado",
+walnuts,170187,Walnuts,Ceviz,ceviz içi|walnut,30,"piece=4;handful=30;cup=usda:cup shelled",piece = 2 x USDA half (100 g per 50 halves); handful is an assumption
+almonds,170567,Almonds,Badem,almond,30,"piece=usda:almond;handful=30;cup=usda:cup, whole",handful is an assumption
+hazelnuts,170581,Hazelnuts,Fındık,fındık içi|hazelnut|filbert,30,"piece=usda:nuts;handful=30;cup=usda:cup, whole",handful is an assumption
+pistachios,170185,Pistachios,Antep fıstığı,pistachio|şam fıstığı,30,"piece=usda:kernel;handful=30;cup=usda:cup",handful is an assumption
+peanuts,173806,Peanuts,Yer fıstığı,peanut,30,"piece=usda:peanut;handful=30;cup=usda:cup",handful is an assumption
+sunflower_seeds,170562,Sunflower seeds,Ay çekirdeği,ayçekirdeği|çekirdek,30,"cup=usda:cup;handful=25",kernel weight; in-shell weights include inedible hulls; handful is an assumption
+pumpkin_seeds,170557,Pumpkin seeds,Kabak çekirdeği,pepitas,30,"cup=usda:cup;handful=25",handful is an assumption
+tahini,170189,Tahini,Tahin,tahina,15,"tbsp=usda:tbsp",
+peanut_butter,172470,Peanut butter,Fıstık ezmesi,,16,"tbsp=usda:tbsp;cup=usda:cup",
+olive_oil,171413,Olive oil,Zeytinyağı,zeytin yağı,10,"tbsp=usda:tablespoon;tsp=usda:tsp;density=usda:cup",
+sunflower_oil,171025,Sunflower oil,Ayçiçek yağı,ayçiçeği yağı|sıvı yağ|vegetable oil,10,"tbsp=usda:tbsp;tsp=usda:tsp;density=usda:cup",
+sugar,169655,Sugar,Şeker,toz şeker|granulated sugar,5,"piece=usda:serving 1 cube;tsp=usda:tsp;cup=usda:cup",piece = one sugar cube
+honey,169640,Honey,Bal,,21,"tbsp=usda:tbsp;cup=usda:cup",
+jam,169641,Jam,Reçel,marmelat|preserves,20,"tbsp=usda:tbsp",
+milk_chocolate,167587,Milk chocolate,Sütlü çikolata,,40,"piece=usda:bar (1.55 oz)",piece = one 44 g bar
+dark_chocolate,170273,Dark chocolate,Bitter çikolata,,30,"piece=usda:bar",piece = one 101 g bar
+molasses,168820,Molasses,Pekmez,üzüm pekmezi,20,"tbsp=usda:serving 1 tbsp;cup=usda:cup",cane molasses used as a stand-in for Turkish grape pekmez (similar sugar content)
+mayonnaise,171009,Mayonnaise,Mayonez,mayo,14,"tbsp=usda:tbsp",
+ketchup,168556,Ketchup,Ketçap,catsup,17,"tbsp=usda:tbsp",
+black_tea,173227,Black tea,Çay,siyah çay|tea,100,"cup=usda:cup (8 fl oz);glass=100;density=usda:cup (8 fl oz)",glass = Turkish tea glass (about 100 ml; assumption); no sugar
+green_tea,171917,Green tea,Yeşil çay,,200,"cup=usda:cup;density=usda:cup",
+coffee,171890,Brewed coffee,Filtre kahve,kahve|coffee|black coffee|americano,200,"cup=usda:cup (8 fl oz);density=usda:cup (8 fl oz)",no milk or sugar
+water,173647,Water,Su,içme suyu|drinking water,200,"density=usda:serving 8 fl oz",
+orange_juice,169098,Orange juice,Portakal suyu,taze sıkma portakal suyu,200,"cup=usda:cup;density=usda:cup",
+apple_juice,173933,Apple juice,Elma suyu,,200,"cup=usda:cup;density=usda:cup",
+cola,174852,Cola,Kola,cola|soda,330,"piece=usda:can or bottle (12 fl oz);density=usda:fl oz",
+beer,168746,Beer,Bira,,330,"piece=usda:can;density=usda:fl oz",
+red_wine,173190,Red wine,Kırmızı şarap,şarap|wine,150,"density=usda:fl oz",
+chicken_broth,174536,Chicken broth,Tavuk suyu,chicken stock,250,"cup=usda:cup;bowl=250;density=usda:cup",bowl is an assumption
+chicken_noodle_soup,172909,Chicken noodle soup,Şehriyeli tavuk çorbası,tavuk çorbası|tavuk suyu çorbası|chicken soup,250,"cup=usda:serving 1 cup;bowl=250;density=usda:serving 1 cup",canned soup; bowl is an assumption
+tomato_soup,171176,Tomato soup,Domates çorbası,,250,"cup=usda:serving 1 cup;bowl=250;density=usda:serving 1 cup",canned soup; bowl is an assumption
+hamburger,170693,Hamburger,Hamburger,burger,78,"piece=usda:sandwich",fast-food single patty; plain
+pizza,170317,Cheese pizza,Peynirli pizza,pizza,150,"slice=usda:serving 9 servings",slice = 1/9 of a 24 oz frozen pizza
+potato_chips,169677,Potato chips,Cips,patates cipsi,30,"piece=usda:chips",

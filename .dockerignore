@@ -30,3 +30,6 @@ pgdata/
 .DS_Store
 .vscode/
 .idea/
+
+# Raw third-party downloads
+data/raw/
