@@ -2,7 +2,9 @@
 
 from functools import lru_cache
 from pathlib import Path
+from urllib.parse import quote
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,9 +17,33 @@ class Settings(BaseSettings):
     model_filename: str = "astra-meal-parser-1.5b-q4_k_m.gguf"
     model_dir: Path = Path("models")
     parser_use_grammar: bool = False
+
+    # Same POSTGRES_* variables docker compose uses for the db service.
+    postgres_user: str = "astra"
+    postgres_password: str | None = None
+    postgres_db: str = "astra_meals"
+    postgres_host: str = "localhost"  # "db" inside docker compose
+    postgres_port: int = 5432
+    database_url: str | None = None  # optional override; built if not set
+
     embedding_model_name: str = (
         "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     )
+
+    @model_validator(mode="after")
+    def build_database_url(self) -> "Settings":
+        """Derive DATABASE_URL from POSTGRES_* so the password lives in one place.
+
+        Keeping the password in two variables let them drift apart and caused
+        "password authentication failed" even though both looked correct.
+        """
+        if not self.database_url and self.postgres_password:
+            password = quote(self.postgres_password, safe="")
+            self.database_url = (
+                f"postgresql://{self.postgres_user}:{password}"
+                f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+            )
+        return self
 
     @property
     def model_path(self) -> Path:

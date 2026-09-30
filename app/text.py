@@ -34,3 +34,15 @@ def fold(text: str) -> str:
     users who type without Turkish characters ("tavuk gogsu", "kasik").
     """
     return " ".join(text.translate(_TURKISH_FOLD).lower().split())
+
+
+def embedding_text(text: str) -> str:
+    """Normalize text before embedding: lowercase, but keep Turkish letters.
+
+    The embedding model is case-sensitive for Turkish ("tavuk göğsü" vs
+    "Tavuk göğsü": 0.82 similarity), so aliases and queries must share casing.
+    ASCII folding is avoided here because it also lowered similarity (0.71).
+    Known limit: a capital "I" becomes "i", although in Turkish words it
+    stands for "ı" ("Izgara" -> "izgara", not "ızgara").
+    """
+    return " ".join(text.replace("İ", "i").lower().split())
