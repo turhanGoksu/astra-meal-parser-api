@@ -69,7 +69,11 @@ class PgFoodIndex:
             "FROM food_aliases ORDER BY sim DESC, id LIMIT %s",
             (folded, k),
         ).fetchall()
-        return [Candidate(f, a, float(s), MatchMethod.FUZZY) for f, a, s in rows]
+        # pg_trgm returns float4, which psycopg parses from its text form;
+        # re-round to float32 so both backends return bit-identical scores.
+        return [
+            Candidate(f, a, float(np.float32(s)), MatchMethod.FUZZY) for f, a, s in rows
+        ]
 
     def nearest(self, vector: np.ndarray, k: int) -> list[Candidate]:
         rows = self._conn.execute(

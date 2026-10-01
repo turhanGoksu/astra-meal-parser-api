@@ -110,8 +110,15 @@ class MatchConfig:
 
     strategy: Strategy = Strategy.HYBRID
     fuzzy_threshold: float = 0.5
-    embedding_threshold: float = 0.9
+    # None (or anything above 1.0) turns the embedding-threshold stage off.
+    embedding_threshold: float | None = 0.9
     judge_candidates: int = 5  # distinct foods shown to the judge
+
+    @property
+    def embedding_stage_on(self) -> bool:
+        if self.strategy == Strategy.EXACT:
+            return False
+        return self.embedding_threshold is not None and self.embedding_threshold <= 1.0
 
 
 class FoodMatcher:
@@ -120,10 +127,16 @@ class FoodMatcher:
     def __init__(
         self,
         index: FoodIndex,
-        embedder: Embedder,
+        embedder: Embedder | None,
         config: MatchConfig,
         judge: Judge | None = None,
     ) -> None:
+        needs_embedder = judge is not None or config.embedding_stage_on
+        if needs_embedder and embedder is None:
+            raise ValueError(
+                "this configuration needs an embedder (the judge or the embedding "
+                "stage is on): pip install 'astra-nutrition[judge]'"
+            )
         self._index = index
         self._embedder = embedder
         self._judge = judge
@@ -155,19 +168,26 @@ class FoodMatcher:
             if self._judge is not None:
                 return self._ask_judge(name)
 
-        nearest = self._index.nearest(self._embedder.embed([name])[0], k=1)
+        if not self.config.embedding_stage_on:
+            return MatchResult(query=name, matched=False, best_candidate=best)
+        nearest = self._index.nearest(self._embed(name), k=1)
         if nearest:
             best = nearest[0]
+            assert self.config.embedding_threshold is not None
             if best.similarity >= self.config.embedding_threshold:
                 return _matched(name, best)
         return MatchResult(query=name, matched=False, best_candidate=best)
+
+    def _embed(self, name: str) -> np.ndarray:
+        assert self._embedder is not None  # checked in __init__
+        return self._embedder.embed([name])[0]
 
     def _ask_judge(self, name: str) -> MatchResult:
         """Retrieve distinct candidate foods and let the judge decide."""
         assert self._judge is not None
         k = self.config.judge_candidates
         by_food: dict[str, Candidate] = {}
-        for cand in self._index.nearest(self._embedder.embed([name])[0], k=4 * k):
+        for cand in self._index.nearest(self._embed(name), k=4 * k):
             by_food.setdefault(cand.food_id, cand)  # keep each food's best alias
             if len(by_food) == k:
                 break
@@ -204,12 +224,10 @@ class FoodMatcher:
         folded = fold(name)
         if not folded:
             return []
-        vector = self._embedder.embed([name])[0]
-        return [
-            *self._index.exact(folded),
-            *self._index.fuzzy(folded, k),
-            *self._index.nearest(vector, k),
-        ]
+        found = [*self._index.exact(folded), *self._index.fuzzy(folded, k)]
+        if self._embedder is not None:
+            found += self._index.nearest(self._embed(name), k)
+        return found
 
 
 def _matched(query: str, candidate: Candidate) -> MatchResult:

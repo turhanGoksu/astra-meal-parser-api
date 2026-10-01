@@ -1,6 +1,7 @@
 """Unit tests for the ingest helpers (no database needed)."""
 
-from scripts.ingest_foods import alias_rows, typed_food
+from astra_nutrition.tables import alias_rows
+from scripts.ingest_foods import typed_food
 
 FOOD = {
     "id": "chicken_breast",

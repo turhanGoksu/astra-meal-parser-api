@@ -12,27 +12,7 @@ from datetime import UTC, datetime
 from app.config import get_settings
 from astra_nutrition.embeddings import Embedder, SentenceTransformerEmbedder
 from astra_nutrition.index.postgres import apply_schema, connect
-from astra_nutrition.tables import read_table
-from astra_nutrition.text import embedding_text, fold
-
-
-def alias_rows(foods: list[dict[str, str]]) -> list[tuple[str, str, str, str]]:
-    """One (food_id, alias, alias_folded, kind) row per distinct name of a food.
-
-    Names with the same embedding input ("Kefir" as both EN and TR name) would
-    produce identical vectors, so only the first is kept. "Yoğurt" and "yogurt"
-    stay separate: they fold to the same key but embed differently.
-    """
-    rows = []
-    for food in foods:
-        names = [(food["name_en"], "name_en"), (food["name_tr"], "name_tr")]
-        names += [(a, "alias") for a in food["aliases"].split("|") if a]
-        seen: set[str] = set()
-        for name, kind in names:
-            if embedding_text(name) not in seen:
-                seen.add(embedding_text(name))
-                rows.append((food["id"], name, fold(name), kind))
-    return rows
+from astra_nutrition.tables import alias_rows, read_table
 
 
 def typed_food(row: dict[str, str]) -> dict[str, object]:
