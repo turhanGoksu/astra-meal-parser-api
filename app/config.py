@@ -30,6 +30,11 @@ class Settings(BaseSettings):
         "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     )
 
+    # PROVISIONAL placeholders: replaced by values tuned on the dev set (Step 7).
+    match_strategy: str = "hybrid"
+    match_fuzzy_threshold: float = 0.5
+    match_embedding_threshold: float = 0.9
+
     @model_validator(mode="after")
     def build_database_url(self) -> "Settings":
         """Derive DATABASE_URL from POSTGRES_* so the password lives in one place.
