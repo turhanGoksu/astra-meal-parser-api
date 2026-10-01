@@ -1,0 +1,14 @@
+{
+  "dev_names": 118,
+  "langchain_tables_created": [
+    "langchain_pg_collection",
+    "langchain_pg_embedding"
+  ],
+  "load_seconds": 2.38,
+  "top1_food_agreement": "118/118",
+  "recall@5_manual": "72/72",
+  "recall@5_langchain": "72/72",
+  "max_abs_similarity_gap": 0.0,
+  "median_ms_manual": 7.45,
+  "median_ms_langchain": 9.93
+}

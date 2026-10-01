@@ -1,0 +1,5 @@
+# Optional: only for eval/langchain_compare.py (Step 9). Never installed into
+# the Docker image; the service keeps its own retrieval code.
+-r requirements.txt
+
+langchain-postgres==0.0.18
