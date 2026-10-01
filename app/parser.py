@@ -13,6 +13,7 @@ and on a non-meal input it turned a loud ``invalid_output`` into a silent
 
 import json
 import logging
+import re
 import threading
 import time
 from enum import StrEnum
@@ -23,6 +24,7 @@ from llama_cpp import Llama
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from app.prompts import SYSTEM_PROMPT
+from app.text import fold
 
 logger = logging.getLogger(__name__)
 
@@ -68,15 +70,35 @@ class RejectedItem(BaseModel):
     reason: str
 
 
+class Resplit(BaseModel):
+    """A merged item that a second parse split into several items."""
+
+    original: ParsedItem
+    names: list[str]
+
+
 class ParseResult(BaseModel):
     """Result of parsing one meal description."""
 
     status: ParseStatus
     items: list[ParsedItem] = Field(default_factory=list)
     rejected_items: list[RejectedItem] = Field(default_factory=list)
+    resplits: list[Resplit] = Field(default_factory=list)
     raw_output: str | None = None
     error: str | None = None
     latency_ms: float | None = None
+
+
+# Words that suggest the model merged several foods into one name, e.g.
+# "Yoğurt with honey and walnuts". Matched on folded, whole-word tokens.
+_MERGE_WORDS = {"with", "and", "ve", "ile"}
+_MERGE_SYMBOLS = ("&", "+", ",")
+
+
+def looks_merged(name: str) -> bool:
+    """True if a parsed name may contain several foods."""
+    tokens = set(re.findall(r"[a-z]+", fold(name)))
+    return bool(tokens & _MERGE_WORDS) or any(s in name for s in _MERGE_SYMBOLS)
 
 
 class ChatModel(Protocol):
@@ -130,9 +152,14 @@ class MealParser:
     """Thread-safe wrapper around the GGUF meal parser. Load once, reuse."""
 
     def __init__(
-        self, llm: ChatModel, use_grammar: bool = False, max_tokens: int = 512
+        self,
+        llm: ChatModel,
+        use_grammar: bool = False,
+        max_tokens: int = 512,
+        resplit_merged: bool = True,
     ) -> None:
         self._llm = llm
+        self._resplit_merged = resplit_merged
         # llama.cpp keeps one KV cache per model instance: never run two
         # generations on it at the same time.
         self._lock = threading.Lock()
@@ -150,6 +177,7 @@ class MealParser:
         n_ctx: int = 2048,
         n_threads: int | None = None,
         use_grammar: bool = False,
+        resplit_merged: bool = True,
     ) -> "MealParser":
         """Load the GGUF model from disk (slow: call once at startup)."""
         llm = Llama(
@@ -160,10 +188,44 @@ class MealParser:
             chat_format="chatml",
             verbose=False,
         )
-        return cls(llm, use_grammar=use_grammar)
+        return cls(llm, use_grammar=use_grammar, resplit_merged=resplit_merged)
 
     def parse(self, meal_text: str) -> ParseResult:
-        """Parse one meal description. Never raises: failures become a status."""
+        """Parse one meal description. Never raises: failures become a status.
+
+        Items whose name looks merged ("X with Y and Z") are parsed once more
+        on their own (Design R). Real dishes ("mac and cheese") come back as a
+        single item and are kept. After a split, the first item keeps the
+        original amount; the others get an empty amount, which amount
+        normalization flags as an assumed portion instead of guessing.
+        """
+        start = time.perf_counter()
+        result = self._parse_once(meal_text)
+        if self._resplit_merged and result.items:
+            items: list[ParsedItem] = []
+            for item in result.items:
+                parts = self._split(item)
+                if len(parts) > 1:
+                    result.resplits.append(Resplit(original=item, names=parts))
+                    items.append(ParsedItem(name=parts[0], amount=item.amount))
+                    items += [ParsedItem(name=name, amount="") for name in parts[1:]]
+                else:
+                    items.append(item)
+            result.items = items
+        result.latency_ms = _elapsed_ms(start)
+        return result
+
+    def _split(self, item: ParsedItem) -> list[str]:
+        """Names from a second parse of a merged-looking item (or just its own)."""
+        if not looks_merged(item.name):
+            return [item.name]
+        second = self._parse_once(item.name)
+        if second.status != ParseStatus.SUCCESS or len(second.items) < 2:
+            return [item.name]
+        return [part.name for part in second.items]
+
+    def _parse_once(self, meal_text: str) -> ParseResult:
+        """One model call plus validation."""
         start = time.perf_counter()
         try:
             with self._lock:

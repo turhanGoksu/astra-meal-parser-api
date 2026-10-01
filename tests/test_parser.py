@@ -4,20 +4,28 @@ from typing import Any
 
 import pytest
 
-from app.parser import MealParser, ParseStatus, validate_output
+from app.parser import (
+    MealParser,
+    ParseStatus,
+    looks_merged,
+    validate_output,
+)
 from app.prompts import SYSTEM_PROMPT
 
 
 class FakeLlm:
-    """Returns a canned completion (or raises) instead of running a model."""
+    """Returns canned completions (or raises) instead of running a model.
+
+    ``content`` may be one string or a list returned in order, one per call.
+    """
 
     def __init__(
         self,
-        content: str = "",
+        content: str | list[str] = "",
         finish_reason: str = "stop",
         error: Exception | None = None,
     ) -> None:
-        self.content = content
+        self.contents = [content] if isinstance(content, str) else list(content)
         self.finish_reason = finish_reason
         self.error = error
         self.calls: list[dict[str, Any]] = []
@@ -26,10 +34,11 @@ class FakeLlm:
         self.calls.append(kwargs)
         if self.error is not None:
             raise self.error
+        content = self.contents[min(len(self.calls), len(self.contents)) - 1]
         return {
             "choices": [
                 {
-                    "message": {"content": self.content},
+                    "message": {"content": content},
                     "finish_reason": self.finish_reason,
                 }
             ]
@@ -111,3 +120,70 @@ def test_inference_exception_becomes_error_status() -> None:
     assert result.status == ParseStatus.ERROR
     assert "RuntimeError" in (result.error or "")
     assert result.latency_ms is not None
+
+
+@pytest.mark.parametrize(
+    ("name", "expected"),
+    [
+        ("Yoğurt with honey and walnuts", True),
+        ("Yulaf Ezmesi Süt İle", True),
+        ("tavuk, pilav", True),
+        ("Bread & butter", True),
+        ("mac and cheese", True),  # flagged; the second parse keeps it whole
+        ("Vegetable soup", False),  # "ve" only as a whole word
+        ("chicken noodle soup", False),
+        ("Kuru Fasulye", False),
+    ],
+)
+def test_looks_merged(name: str, expected: bool) -> None:
+    assert looks_merged(name) is expected
+
+
+MERGED = '{"items": [{"name": "Yoğurt with honey and walnuts", "amount": "1 bowl"}]}'
+SPLIT = (
+    '{"items": [{"name": "Yoğurt", "amount": "1 adet (150g)"},'
+    ' {"name": "Honey", "amount": "1 tane"}, {"name": "Walnuts", "amount": "1 adet"}]}'
+)
+
+
+def test_merged_item_is_split_first_part_keeps_original_amount() -> None:
+    fake = FakeLlm([MERGED, SPLIT])
+    result = MealParser(fake).parse("1 bowl yoğurt with honey and walnuts")
+
+    assert len(fake.calls) == 2
+    assert fake.calls[1]["messages"][1]["content"] == "Yoğurt with honey and walnuts"
+    # Invented amounts from the second parse are dropped, not trusted.
+    assert [(i.name, i.amount) for i in result.items] == [
+        ("Yoğurt", "1 bowl"),
+        ("Honey", ""),
+        ("Walnuts", ""),
+    ]
+    assert result.resplits[0].original.name == "Yoğurt with honey and walnuts"
+    assert result.resplits[0].names == ["Yoğurt", "Honey", "Walnuts"]
+
+
+def test_real_dish_with_conjunction_is_kept_whole() -> None:
+    dish = '{"items": [{"name": "Mac and Cheese", "amount": "1 plate"}]}'
+    fake = FakeLlm([dish, dish])
+    result = MealParser(fake).parse("a plate of mac and cheese")
+    assert [(i.name, i.amount) for i in result.items] == [("Mac and Cheese", "1 plate")]
+    assert result.resplits == []
+
+
+def test_failed_second_parse_keeps_the_original_item() -> None:
+    fake = FakeLlm([MERGED, "not json"])
+    result = MealParser(fake).parse("yoğurt with honey and walnuts")
+    assert [i.name for i in result.items] == ["Yoğurt with honey and walnuts"]
+
+
+def test_no_merge_word_means_no_second_call() -> None:
+    fake = FakeLlm('{"items": [{"name": "Tavuk Göğsü", "amount": "100g"}]}')
+    MealParser(fake).parse("100g tavuk göğsü")
+    assert len(fake.calls) == 1
+
+
+def test_resplit_can_be_disabled() -> None:
+    fake = FakeLlm([MERGED, SPLIT])
+    result = MealParser(fake, resplit_merged=False).parse("yoğurt with honey")
+    assert len(fake.calls) == 1
+    assert len(result.items) == 1

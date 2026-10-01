@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     model_filename: str = "astra-meal-parser-1.5b-q4_k_m.gguf"
     model_dir: Path = Path("models")
     parser_use_grammar: bool = False
+    parser_resplit_merged: bool = True  # Design R: re-parse "X with Y" items
 
     # Same POSTGRES_* variables docker compose uses for the db service.
     postgres_user: str = "astra"
