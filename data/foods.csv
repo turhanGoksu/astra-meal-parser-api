@@ -19,9 +19,16 @@ milk_reduced_fat,171267,"Milk, reduced fat, fluid, 2% milkfat, with added vitami
 yogurt,171284,"Yogurt, plain, whole milk",Plain yogurt,Yoğurt,yogurt|yoghurt|sade yoğurt|tam yağlı yoğurt,61.0,3.47,4.66,3.25,150.0,,bowl and glass are assumptions
 yogurt_low_fat,170886,"Yogurt, plain, low fat",Low-fat yogurt,Az yağlı yoğurt,light yoğurt|low-fat yogurt,63.0,5.25,7.04,1.55,150.0,,bowl and glass are assumptions
 greek_yogurt,171304,"Yogurt, Greek, plain, whole milk",Greek yogurt,Süzme yoğurt,strained yogurt|greek yoghurt,97.0,9.0,3.98,5.0,150.0,,bowl is an assumption
-feta,173420,"Cheese, feta",Feta cheese,Beyaz peynir,feta|white cheese|ezine peyniri,265.0,14.21,3.88,21.49,30.0,,slice is an assumption (Turkish breakfast slice)
-mozzarella,170845,"Cheese, mozzarella, whole milk",Mozzarella,Mozzarella peyniri,mozarella,299.0,22.17,2.4,22.14,30.0,,
+feta,173420,"Cheese, feta",Feta cheese,Beyaz peynir,feta|white cheese|ezine peyniri|peynir,265.0,14.21,3.88,21.49,30.0,,slice is an assumption (Turkish breakfast slice); generic Turkish 'peynir' defaults to beyaz peynir
+mozzarella,170845,"Cheese, mozzarella, whole milk",Mozzarella,Mozzarella peyniri,mozarella|dil peyniri|örgü peyniri|string cheese,299.0,22.17,2.4,22.14,30.0,,also stands in for Turkish dil/örgü peyniri (stretched-curd cheeses)
 cream_cheese,173418,"Cheese, cream",Cream cheese,Krem peynir,labne|labne peyniri,350.0,6.15,5.52,34.44,30.0,,Turkish labne is a cream-cheese-style spread
+cheddar,173414,"Cheese, cheddar (Includes foods for USDA's Food Distribution Program)",Cheddar cheese,Çedar peyniri,cheddar|cheese,403.0,22.87,3.37,33.31,30.0,,generic English 'cheese' defaults to cheddar
+kasar,170850,"Cheese, provolone",Kasar cheese,Kaşar peyniri,kaşar|kashkaval|provolone,351.0,25.58,2.14,26.62,30.0,,USDA provolone used as a stand-in for Turkish kaşar (both stretched-curd cheeses)
+lor,171248,"Cheese, ricotta, part skim milk",Ricotta (part-skim),Lor peyniri,lor|ricotta,138.0,11.39,5.14,7.91,50.0,,USDA part-skim ricotta used as a stand-in for Turkish lor (both whey cheeses)
+cottage_cheese,172182,"Cheese, cottage, lowfat, 2% milkfat",Cottage cheese,Cottage peyniri,cottage,81.0,10.45,4.76,2.27,100.0,,low-fat (2%)
+goat_cheese,173433,"Cheese, goat, semisoft type",Goat cheese,Keçi peyniri,,364.0,21.58,0.12,29.84,30.0,,semisoft type
+parmesan,171247,"Cheese, parmesan, grated",Parmesan,Parmesan peyniri,parmigiano|grated parmesan,420.0,28.42,13.91,27.84,10.0,,grated
+gouda,171241,"Cheese, gouda",Gouda cheese,Gouda peyniri,gouda,356.0,24.94,2.22,27.44,30.0,,
 butter,173410,"Butter, salted",Butter,Tereyağı,tereyağ,717.0,0.85,0.06,81.11,10.0,,tsp is an assumption
 kefir,170904,"Kefir, lowfat, plain, LIFEWAY",Kefir,Kefir,,43.0,3.79,4.77,1.02,200.0,1.027,
 ice_cream,167575,"Ice creams, vanilla",Vanilla ice cream,Dondurma,ice cream|vanilyalı dondurma,207.0,3.5,23.6,11.0,100.0,,

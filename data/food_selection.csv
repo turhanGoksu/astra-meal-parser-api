@@ -19,9 +19,16 @@ milk_reduced_fat,171267,Reduced-fat milk,Yarım yağlı süt,light süt|low-fat 
 yogurt,171284,Plain yogurt,Yoğurt,yogurt|yoghurt|sade yoğurt|tam yağlı yoğurt,150,"cup=usda:cup (8 fl oz);bowl=200;glass=200",bowl and glass are assumptions
 yogurt_low_fat,170886,Low-fat yogurt,Az yağlı yoğurt,light yoğurt|low-fat yogurt,150,"cup=usda:cup (8 fl oz);bowl=200;glass=200",bowl and glass are assumptions
 greek_yogurt,171304,Greek yogurt,Süzme yoğurt,strained yogurt|greek yoghurt,150,"bowl=200",bowl is an assumption
-feta,173420,Feta cheese,Beyaz peynir,feta|white cheese|ezine peyniri,30,"slice=30;cup=usda:cup, crumbled",slice is an assumption (Turkish breakfast slice)
-mozzarella,170845,Mozzarella,Mozzarella peyniri,mozarella,30,"slice=usda:slices;cup=usda:cup, shredded",
+feta,173420,Feta cheese,Beyaz peynir,feta|white cheese|ezine peyniri|peynir,30,"slice=30;cup=usda:cup, crumbled",slice is an assumption (Turkish breakfast slice); generic Turkish 'peynir' defaults to beyaz peynir
+mozzarella,170845,Mozzarella,Mozzarella peyniri,mozarella|dil peyniri|örgü peyniri|string cheese,30,"slice=usda:slices;cup=usda:cup, shredded",also stands in for Turkish dil/örgü peyniri (stretched-curd cheeses)
 cream_cheese,173418,Cream cheese,Krem peynir,labne|labne peyniri,30,"tbsp=usda:tbsp",Turkish labne is a cream-cheese-style spread
+cheddar,173414,Cheddar cheese,Çedar peyniri,cheddar|cheese,30,"slice=usda:slice (1 oz);cup=usda:cup, shredded",generic English 'cheese' defaults to cheddar
+kasar,170850,Kasar cheese,Kaşar peyniri,kaşar|kashkaval|provolone,30,"slice=usda:slice (1 oz);cup=usda:cup, diced",USDA provolone used as a stand-in for Turkish kaşar (both stretched-curd cheeses)
+lor,171248,Ricotta (part-skim),Lor peyniri,lor|ricotta,50,"cup=usda:cup",USDA part-skim ricotta used as a stand-in for Turkish lor (both whey cheeses)
+cottage_cheese,172182,Cottage cheese,Cottage peyniri,cottage,100,"cup=usda:cup (not packed)",low-fat (2%)
+goat_cheese,173433,Goat cheese,Keçi peyniri,,30,,semisoft type
+parmesan,171247,Parmesan,Parmesan peyniri,parmigiano|grated parmesan,10,"tbsp=usda:tbsp;cup=usda:cup",grated
+gouda,171241,Gouda cheese,Gouda peyniri,gouda,30,,
 butter,173410,Butter,Tereyağı,tereyağ,10,"tbsp=usda:tbsp;tsp=5",tsp is an assumption
 kefir,170904,Kefir,Kefir,,200,"cup=usda:cup;density=usda:cup",
 ice_cream,167575,Vanilla ice cream,Dondurma,ice cream|vanilyalı dondurma,100,,
