@@ -1,0 +1,194 @@
+name,gold,tags,note
+Haşlanmış Yumurta,egg_boiled,tr,
+Beyaz Peynir,feta,tr,
+Zeytin,black_olives|green_olives,tr,generic olive: both colors acceptable
+Çay,black_tea,tr,
+Mercimek Çorbası,none,tr,soup is a different dish from plain lentils
+Yarım Ekmek,white_bread,tr;noise,amount word leaked into the name
+Izgara Köfte,none,tr,
+Pilav,rice,tr,table maps pilav to cooked rice (documented approximation)
+Çoban Salata,none,tr,mixed salad
+Yoğurt,yogurt,tr,
+Ceviz,walnuts,tr,
+Menemen,none,tr,
+Ekme,white_bread,tr;typo;noise,"parser truncated ""ekmek"""
+Mantı,none,tr,
+Ayran,none,tr,
+Lahmacun,none,tr,
+Tavuk Sote,none,tr,chicken dish with vegetables and oil
+Bulgur Pilavı,bulgur,tr,
+Cacık,none,tr,
+Araböğün,none,tr;noise,"parser turned ""ara öğün"" (snack) into a food name"
+Badem,almonds,tr,
+Simit,none,tr,near miss: bagel is in the table but is a different bread
+Kaşar Peyniri,kasar,tr,table v2 adds kaşar (USDA provolone stand-in)
+Domates,tomato,tr,
+Salatalık,cucumber,tr,
+Tavuk Göğüs,chicken_breast,tr,
+Haşlanmış Brokoli,broccoli,tr,raw broccoli values are a close stand-in
+Bal,honey,tr,
+Somon,salmon,tr,
+Roka Salatası,arugula,tr,salad is mostly arugula; dressing not counted
+Kuru Fasulye,white_beans,tr,table maps kuru fasulye to boiled white beans (documented approximation)
+Turşu,none,tr,
+Türk Kahvesi,coffee,tr,brewed coffee is a close stand-in (both near zero kcal)
+Lokum,none,tr,
+Iskender Kebap,none,tr,
+Karpuz,watermelon,tr,
+Kaşarlı Tost,none,tr,
+Portakal Suyu,orange_juice,tr,
+Yumurta,egg,tr,
+Peynir,feta,tr,table v2 maps generic Turkish 'peynir' to beyaz peynir (documented default)
+Ogle Yemegi,none,tr;ascii;noise,"parser turned ""öğle yemeği"" (lunch) into a food name"
+Tavuk Gogsu,chicken_breast,tr;ascii,
+Pirinc Pilavi,rice,tr;ascii,
+Mercimek Corbisi,none,tr;ascii;typo,
+Salata,none,tr,generic salad
+Tam Bugday Ekmegi,whole_wheat_bread,tr;ascii,
+Fistik Ezmesi,peanut_butter,tr;ascii,
+scrambled eggs,egg|egg_fried,en,cooked with fat: egg or fried egg acceptable
+whole wheat toast,whole_wheat_bread,en,
+black coffee,coffee,en,
+grilled chicken salad,none,en,
+olive oil dressing,olive_oil,en,dressing calories come mostly from the oil
+oatmeal,none,en,cooked oatmeal is not in the table (only dry oats)
+blueberries,none,en,
+honey,honey,en,
+turkey sandwich,none,en,
+apple,apple,en,
+salmon fillet,salmon,en,
+steamed broccoli,broccoli,en,
+brown rice,brown_rice,en,
+greek yogurt,greek_yogurt,en,
+granola,none,en,
+strawberries,strawberries,en,
+cheeseburger,none,en,near miss: plain hamburger is in the table
+fries,french_fries,en,
+coke,cola,en,
+slices of pepperoni pizza,none,en;noise,near miss: cheese pizza is in the table
+spaghetti bolognese,none,en,pasta with meat sauce
+almonds,almonds,en,
+banana,banana,en,
+avocado toast,none,en,
+poached egg,egg|egg_boiled,en,
+chicken noodle soup,chicken_noodle_soup,en,
+crackers,none,en,
+red wine,red_wine,en,
+cheese,cheddar,en,table v2 maps generic English 'cheese' to cheddar (documented default)
+beef steak,beef_steak,en,
+baked potato,potato_baked,en,
+chiken breast,chicken_breast,en;typo,
+white rice,rice,en,
+Bananna,banana,en;typo,
+Mlik,milk_whole|milk_reduced_fat,en;typo,generic milk
+tuna salad,none,en,
+lettuce,lettuce,en,
+tomatoes,tomato,en,
+Eggs,egg,en,
+Tea,black_tea,en,
+Bread,white_bread,en,table maps bread to white bread (documented approximation)
+chicken breast,chicken_breast,en,
+Pasta,pasta,en,
+Tomato Sauce,none,en,
+Elma,apple,tr,
+Hazelnuts,hazelnuts,en,
+2 dilim ekmek,white_bread,tr;noise,amount leaked into the name
+Öğlen Falafel Wrap,none,tr;noise,
+Yulaf Ezmesi,oats,tr,split from a merged item by the second parse
+Süt,milk_whole|milk_reduced_fat,tr,generic milk
+protein shake,none,en,
+milk,milk_whole|milk_reduced_fat,en,generic milk
+peanut butter,peanut_butter,en,
+Walnuts,walnuts,en,
+Rafadan,egg_boiled,tr,soft-boiled egg
+Dil Peyniri,mozzarella,tr,
+Laktozsuz Süt,milk_whole|milk_reduced_fat,tr,lactose-free milk has the same macros
+Yulaf,oats,tr,
+Kuru Üzüm,none,tr;hard_negative,"raisins, not grapes"
+Kırmızı Mercimek Haşlaması,lentils,tr,
+Fırın Tavuk But,chicken_thigh,tr,
+Patates Püresi,none,tr,mashed with butter and milk
+Roka,arugula,tr,
+Su Böreği,none,tr;hard_negative,"pastry, shares the word 'su' with water"
+Demli Çay,black_tea,tr,
+Yer Elması,none,tr;hard_negative,"jerusalem artichoke, not apple"
+Muzlu Süt,none,tr;hard_negative,banana milk drink
+Bal Kabağı Tatlısı,none,tr;hard_negative,pumpkin dessert
+Dondurma,ice_cream,tr,
+Kepekli Ekmek,whole_wheat_bread,tr,
+Lor,lor,tr,
+Domatesler,tomato,tr,plural
+Tavuk Döner Dürüm,none,tr,
+Izgara Piliç Fileto,chicken_breast,tr,piliç is a synonym of tavuk
+Patates Haşlama,potato_boiled,tr,word order differs from the alias
+Sucuklu Yumurta,none,tr;hard_negative,eggs with sucuk
+Ekmek,white_bread,tr,
+Zeytinyağ,olive_oil,tr,
+Çoban Salatası,none,tr,mixed salad
+Tahin Pekmez,none,tr;noise,two foods merged without a conjunction
+Kaşar,kasar,tr,
+Elma Çayı,none,tr;hard_negative,"apple tea, not apple or black tea"
+Kurabiye,none,tr,
+Sütlaç,none,tr;hard_negative,"rice pudding, not milk"
+Peynirli Gözleme,none,tr,
+Kokoreç,none,tr,
+Öğlen Kısır,none,tr;noise,time word leaked into the name
+Karnıyarık,none,tr,
+Hamsi Tava,none,tr;hard_negative,fried with coating and oil; table has raw anchovy
+Mısır Ekmeği,none,tr;hard_negative,"corn bread, not corn"
+Patlıcan Kızartması,none,tr;hard_negative,"deep-fried, far more fat than boiled eggplant"
+Haşlanmış Mısır Koçanı,none,tr;hard_negative,fresh boiled corn; table has canned corn
+Çilekli Yoğurt,none,tr;hard_negative,sweetened fruit yogurt
+Etli Kuru Fasulye,none,tr;hard_negative,beans cooked with meat
+Bulgur,bulgur,tr,
+hard boiled eggs,egg_boiled,en,
+sourdough,white_bread,en,sourdough is a white bread with similar macros
+sunny side up eggs,egg_fried,en,
+wholemeal toast,whole_wheat_bread,en,
+porridge,none,en;hard_negative,cooked oats; table has dry oats only
+sliced banana,banana,en,
+jasmine rice,rice,en,
+grilled salmon,salmon,en,
+smoked salmon bagel with cream cheese,none,en;noise,composite item kept whole by the second parse
+canned tuna in oil,none,en;hard_negative,table has tuna canned in water
+rocket leaves,arugula,en,
+diet coke,none,en;hard_negative,"zero-calorie, unlike cola"
+bag of crisps,potato_chips,en,UK English for chips
+sparkling water,water,en,
+mixed nuts,none,en,
+espresso,coffee,en,brewed coffee is a close stand-in (both near zero kcal)
+croissant,none,en,
+Latte,none,en,coffee with milk
+Blueberry Muffin,none,en,
+roasted garbanzos,none,en;hard_negative,dry-roasted chickpeas are about twice as energy-dense as boiled
+summer squash,zucchini,en,
+skim milk,none,en;hard_negative,table has whole and 2% milk only
+earl grey tea,black_tea,en,
+digestive biscuits,none,en,
+pancakes,none,en,
+maple syrup,none,en,
+string cheese,mozzarella,en,
+OJ,orange_juice,en,abbreviation
+70% dark chocolate,dark_chocolate,en,
+Caesar Salad,none,en,
+Grilled Chicken,chicken_breast|chicken_thigh,en,part unspecified
+Hot Dog,none,en,
+Soda,cola,en,table maps soda to cola (documented alias)
+Bannanas,banana,en;typo,
+Yohurt,yogurt,en;typo,
+Brocoli,broccoli,en;typo,
+Spinnach,spinach,en;typo,
+Avacado,avocado,en;typo,
+pistachos,pistachios,en;typo,
+cashews,none,en,
+Beyz Peynir,feta,tr;typo,
+Zeytn,black_olives|green_olives,tr;typo,generic olive
+Sunny Side Up Yumurta,egg_fried,tr,mixed language
+Sourdough Ekmek,white_bread,tr,mixed language
+Tavuk Döner,none,tr,
+Diet Kola,none,tr;hard_negative,"zero-calorie, unlike cola"
+grilled levrek,sea_bass,tr,mixed language
+roka salad,arugula,tr,mixed language
+Imam Bayıldı,none,tr,
+Kuru İncir,dried_figs,tr,
+Fındık,hazelnuts,tr,

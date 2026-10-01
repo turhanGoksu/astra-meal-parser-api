@@ -1,0 +1,221 @@
+set,meal_id,meal_text,status,name,amount,from_resplit
+natural,1,"kahvaltıda 2 haşlanmış yumurta, 3 dilim beyaz peynir, 5 zeytin ve 2 bardak çay",success,Haşlanmış Yumurta,2 haşlanmış yumurta,False
+natural,1,"kahvaltıda 2 haşlanmış yumurta, 3 dilim beyaz peynir, 5 zeytin ve 2 bardak çay",success,Beyaz Peynir,3 dilim,False
+natural,1,"kahvaltıda 2 haşlanmış yumurta, 3 dilim beyaz peynir, 5 zeytin ve 2 bardak çay",success,Zeytin,5 zeytin,False
+natural,1,"kahvaltıda 2 haşlanmış yumurta, 3 dilim beyaz peynir, 5 zeytin ve 2 bardak çay",success,Çay,2 bardak,False
+natural,2,öğlen bir tabak mercimek çorbası ve yarım ekmek yedim,success,Mercimek Çorbası,bir tabak,False
+natural,2,öğlen bir tabak mercimek çorbası ve yarım ekmek yedim,success,Yarım Ekmek,1 adet,False
+natural,3,"akşam yemeğinde ızgara köfte, pilav ve çoban salata",success,Izgara Köfte,1 adet (120g),False
+natural,3,"akşam yemeğinde ızgara köfte, pilav ve çoban salata",success,Pilav,1 porsiyon (150g),False
+natural,3,"akşam yemeğinde ızgara köfte, pilav ve çoban salata",success,Çoban Salata,1 porsiyon (150g),False
+natural,4,1 kase yoğurt ve bir avuç ceviz,success,Yoğurt,1 kase,False
+natural,4,1 kase yoğurt ve bir avuç ceviz,success,Ceviz,bir avuç,False
+natural,5,"menemen yaptım 2 yumurtayla, yanında 2 dilim ekmek",success,Menemen,2 yumurtayla,False
+natural,5,"menemen yaptım 2 yumurtayla, yanında 2 dilim ekmek",success,Ekme,2 dilim,False
+natural,6,bir porsiyon mantı ve 1 bardak ayran,success,Mantı,bir porsiyon,False
+natural,6,bir porsiyon mantı ve 1 bardak ayran,success,Ayran,1 bardak,False
+natural,7,2 tane lahmacun ve ayran,success,Lahmacun,2 tane,False
+natural,7,2 tane lahmacun ve ayran,success,Ayran,1 porsiyon,False
+natural,8,"tavuk sote, bulgur pilavı ve cacık",success,Tavuk Sote,1 porsiyon (200g),False
+natural,8,"tavuk sote, bulgur pilavı ve cacık",success,Bulgur Pilavı,1 porsiyon (150g),False
+natural,8,"tavuk sote, bulgur pilavı ve cacık",success,Cacık,1 porsiyon (200ml),False
+natural,9,ara öğün 1 muz ve 10 tane badem,success,Araböğün,1 muz,False
+natural,9,ara öğün 1 muz ve 10 tane badem,success,Badem,10 tane,False
+natural,10,"kahvaltı: simit, kaşar peyniri, domates ve salatalık",success,Simit,1 adet (100g),False
+natural,10,"kahvaltı: simit, kaşar peyniri, domates ve salatalık",success,Kaşar Peyniri,1 adet (60g),False
+natural,10,"kahvaltı: simit, kaşar peyniri, domates ve salatalık",success,Domates,1 porsiyon (100g),False
+natural,10,"kahvaltı: simit, kaşar peyniri, domates ve salatalık",success,Salatalık,1 porsiyon (100g),False
+natural,11,"200 gr tavuk göğüs, 150 gr haşlanmış brokoli",success,Tavuk Göğüs,200 gr,False
+natural,11,"200 gr tavuk göğüs, 150 gr haşlanmış brokoli",success,Haşlanmış Brokoli,150 gr,False
+natural,12,sabah 50 gram yulaf ezmesi süt ile ve 1 tatlı kaşığı bal,success,Yulaf Ezmesi,50 gram,True
+natural,12,sabah 50 gram yulaf ezmesi süt ile ve 1 tatlı kaşığı bal,success,Süt,,True
+natural,12,sabah 50 gram yulaf ezmesi süt ile ve 1 tatlı kaşığı bal,success,Bal,1 tatlı kaşığı,False
+natural,13,"akşam fırında somon, yanında roka salatası",success,Somon,akşam fırında,False
+natural,13,"akşam fırında somon, yanında roka salatası",success,Roka Salatası,andже,False
+natural,14,"1 porsiyon kuru fasulye, pilav ve turşu",success,Kuru Fasulye,1 porsiyon (150g),False
+natural,14,"1 porsiyon kuru fasulye, pilav ve turşu",success,Pilav,1 porsiyon (150g),False
+natural,14,"1 porsiyon kuru fasulye, pilav ve turşu",success,Turşu,1 porsiyon (100g),False
+natural,15,öğleden sonra türk kahvesi ve 2 parça lokum,success,Türk Kahvesi,1 adet (200ml),False
+natural,15,öğleden sonra türk kahvesi ve 2 parça lokum,success,Lokum,2 parça,False
+natural,16,bir porsiyon iskender kebap,success,Iskender Kebap,bir porsiyon,False
+natural,17,2 dilim karpuz ve beyaz peynir,success,Karpuz,2 dilim,False
+natural,17,2 dilim karpuz ve beyaz peynir,success,Beyaz Peynir,1 adet,False
+natural,18,kaşarlı tost ve bir bardak portakal suyu,success,Kaşarlı Tost,1 adet (100g),False
+natural,18,kaşarlı tost ve bir bardak portakal suyu,success,Portakal Suyu,1 birim (200ml),False
+natural,19,"kahvaltida 2 yumurta, peynir, zeytin, cay",success,Yumurta,2,False
+natural,19,"kahvaltida 2 yumurta, peynir, zeytin, cay",success,Peynir,1 adet,False
+natural,19,"kahvaltida 2 yumurta, peynir, zeytin, cay",success,Zeytin,1 porsiyon,False
+natural,19,"kahvaltida 2 yumurta, peynir, zeytin, cay",success,Cay,1 porsiyon,False
+natural,20,ogle yemegi tavuk gogsu 150 gr ve pirinc pilavi,success,Ogle Yemegi,150 gr,False
+natural,20,ogle yemegi tavuk gogsu 150 gr ve pirinc pilavi,success,Tavuk Gogsu,1 porsiyon (150g),False
+natural,20,ogle yemegi tavuk gogsu 150 gr ve pirinc pilavi,success,Pirinc Pilavi,1 porsiyon (150g),False
+natural,21,aksam mercimek corbasi ve salata,success,Mercimek Corbisi,1 porsiyi,False
+natural,21,aksam mercimek corbasi ve salata,success,Salata,1 porsiyi,False
+natural,22,1 kase yogurt ve bal,success,Yogurt,1 kase,False
+natural,22,1 kase yogurt ve bal,success,Bal,1 adet,False
+natural,23,2 dilim tam bugday ekmegi ve fistik ezmesi,success,Tam Bugday Ekmegi,2 dilim (100g),False
+natural,23,2 dilim tam bugday ekmegi ve fistik ezmesi,success,Fistik Ezmesi,1 porsiyon (30g),False
+natural,24,"two scrambled eggs, a slice of whole wheat toast and black coffee",success,scrambled eggs,two large,False
+natural,24,"two scrambled eggs, a slice of whole wheat toast and black coffee",success,whole wheat toast,a slice (60g),False
+natural,24,"two scrambled eggs, a slice of whole wheat toast and black coffee",success,black coffee,1 cup (240ml),False
+natural,25,grilled chicken salad with olive oil dressing,success,grilled chicken salad,1 serving (150g),False
+natural,25,grilled chicken salad with olive oil dressing,success,olive oil dressing,1 tbsp (15g),False
+natural,26,a bowl of oatmeal with blueberries and honey,success,oatmeal,a bowl (150g),False
+natural,26,a bowl of oatmeal with blueberries and honey,success,blueberries,1 cup (150g),False
+natural,26,a bowl of oatmeal with blueberries and honey,success,honey,1 tbsp (20g),False
+natural,27,turkey sandwich and an apple,success,turkey sandwich,1 item (180g),False
+natural,27,turkey sandwich and an apple,success,apple,1 medium (180g),False
+natural,28,150g salmon fillet with steamed broccoli and brown rice,success,salmon fillet,150g,False
+natural,28,150g salmon fillet with steamed broccoli and brown rice,success,steamed broccoli,1 cup (150g),False
+natural,28,150g salmon fillet with steamed broccoli and brown rice,success,brown rice,1 cup (150g),False
+natural,29,greek yogurt with granola and strawberries,success,greek yogurt,1 cup (240g),False
+natural,29,greek yogurt with granola and strawberries,success,granola,1/4 cup (50g),False
+natural,29,greek yogurt with granola and strawberries,success,strawberries,1 cup (100g),False
+natural,30,"a cheeseburger, medium fries and a coke",success,cheeseburger,medium,False
+natural,30,"a cheeseburger, medium fries and a coke",success,fries,medium,False
+natural,30,"a cheeseburger, medium fries and a coke",success,coke,can,False
+natural,31,two slices of pepperoni pizza,success,slices of pepperoni pizza,two slices (100g),False
+natural,32,one plate of spaghetti bolognese,success,spaghetti bolognese,one plate (300g),False
+natural,33,a handful of almonds and a banana,success,almonds,a handful,False
+natural,33,a handful of almonds and a banana,success,banana,1 medium,False
+natural,34,protein shake with milk and peanut butter,success,protein shake,1 serving (30g),True
+natural,34,protein shake with milk and peanut butter,success,milk,,True
+natural,34,protein shake with milk and peanut butter,success,peanut butter,,True
+natural,35,avocado toast with a poached egg,success,avocado toast,1 serving (100g),False
+natural,35,avocado toast with a poached egg,success,poached egg,1 large egg (50g),False
+natural,36,chicken noodle soup and crackers,success,chicken noodle soup,1 bowl (250ml),False
+natural,36,chicken noodle soup and crackers,success,crackers,1 pack (60g),False
+natural,37,a glass of red wine and some cheese,success,red wine,a glass (500ml),False
+natural,37,a glass of red wine and some cheese,success,cheese,some (100g),False
+natural,38,200 g beef steak with a baked potato,success,beef steak,200 g,False
+natural,38,200 g beef steak with a baked potato,success,baked potato,1 medium,False
+natural,39,chiken breast 200g with white rice,success,chiken breast,200g,False
+natural,39,chiken breast 200g with white rice,success,white rice,1 cup (150g),False
+natural,40,two bananna and a glass of mlik,success,Bananna,two,False
+natural,40,two bananna and a glass of mlik,success,Mlik,a glass,False
+natural,41,tuna salad with letuce and tomatos,success,tuna salad,1 serving (150g),False
+natural,41,tuna salad with letuce and tomatos,success,lettuce,1 cup (100g),False
+natural,41,tuna salad with letuce and tomatos,success,tomatoes,1 medium (100g),False
+natural,42,"kahvaltıda 2 eggs, 1 dilim peynir and a cup of tea",success,Eggs,2,False
+natural,42,"kahvaltıda 2 eggs, 1 dilim peynir and a cup of tea",success,Peynir,1 dilim,False
+natural,42,"kahvaltıda 2 eggs, 1 dilim peynir and a cup of tea",success,Tea,a cup,False
+natural,43,lunch: mercimek çorbası and some bread,success,Mercimek Çorbası,some,False
+natural,43,lunch: mercimek çorbası and some bread,success,Bread,some,False
+natural,44,dinner'da 200 gr chicken breast ve pilav,success,chicken breast,200 gr,False
+natural,44,dinner'da 200 gr chicken breast ve pilav,success,pilav,1 porsiyon (150 gr),False
+natural,45,bir tabak pasta with tomato sauce,success,Pasta,bir tabak,False
+natural,45,bir tabak pasta with tomato sauce,success,Tomato Sauce,1 porsiyon,False
+natural,46,snack olarak 1 elma ve 15 hazelnuts,success,Elma,1 elma (150g),False
+natural,46,snack olarak 1 elma ve 15 hazelnuts,success,Hazelnuts,15 hazelnuts (15g),False
+natural,47,breakfast: menemen ve 2 dilim ekmek,success,Menemen,1 porsiyon,False
+natural,47,breakfast: menemen ve 2 dilim ekmek,success,2 dilim ekmek,2 adet,False
+natural,48,öğlen falafel wrap ve ayran,success,Öğlen Falafel Wrap,1 porsiyon (200g),False
+natural,48,öğlen falafel wrap ve ayran,success,Ayran,1 porsiyon (250ml),False
+natural,49,1 bowl yoğurt with honey and walnuts,success,Yoğurt,1 bowl,True
+natural,49,1 bowl yoğurt with honey and walnuts,success,Honey,,True
+natural,49,1 bowl yoğurt with honey and walnuts,success,Walnuts,,True
+variants,1,"kahvaltıda 2 rafadan, yarım ekmek ve bir parça dil peyniri",success,Rafadan,2 rafadan,False
+variants,1,"kahvaltıda 2 rafadan, yarım ekmek ve bir parça dil peyniri",success,Yarım Ekmek,1 porsiyon,False
+variants,1,"kahvaltıda 2 rafadan, yarım ekmek ve bir parça dil peyniri",success,Dil Peyniri,bir parça,False
+variants,2,sabah laktozsuz süt ile 40 gr yulaf ve bir avuç kuru üzüm,success,Laktozsuz Süt,400ml,False
+variants,2,sabah laktozsuz süt ile 40 gr yulaf ve bir avuç kuru üzüm,success,Yulaf,40gr,False
+variants,2,sabah laktozsuz süt ile 40 gr yulaf ve bir avuç kuru üzüm,success,Kuru Üzüm,1 avuç (15g),False
+variants,3,öğlen bir tabak kırmızı mercimek haşlaması ve cacık,success,Kırmızı Mercimek Haşlaması,bir tabak,False
+variants,3,öğlen bir tabak kırmızı mercimek haşlaması ve cacık,success,Cacık,bir porsiyon,False
+variants,4,"akşam fırın tavuk but, patates püresi ve roka",success,Fırın Tavuk But,1 porsiyon (150g),False
+variants,4,"akşam fırın tavuk but, patates püresi ve roka",success,Patates Püresi,1 porsiyon (150g),False
+variants,4,"akşam fırın tavuk but, patates püresi ve roka",success,Roka,1 porsiyon (100g),False
+variants,5,2 dilim su böreği ve 1 çay bardağı demli çay,success,Su Böreği,2 dilim,False
+variants,5,2 dilim su böreği ve 1 çay bardağı demli çay,success,Demli Çay,1 çay bardağı,False
+variants,6,ara öğünde 3 yer elması ve bir muzlu süt,success,Yer Elması,3 adet,False
+variants,6,ara öğünde 3 yer elması ve bir muzlu süt,success,Muzlu Süt,1 porsiyon,False
+variants,7,bir porsiyon bal kabağı tatlısı ve iki top dondurma,success,Bal Kabağı Tatlısı,bir porsiyon,False
+variants,7,bir porsiyon bal kabağı tatlısı ve iki top dondurma,success,Dondurma,iki top,False
+variants,8,"kahvaltıda 2 dilim kepekli ekmek, lor ve domatesler",success,Kepekli Ekmek,2 dilim,False
+variants,8,"kahvaltıda 2 dilim kepekli ekmek, lor ve domatesler",success,Lor,1 porsiyon,False
+variants,8,"kahvaltıda 2 dilim kepekli ekmek, lor ve domatesler",success,Domatesler,2 adet,False
+variants,9,öğle yemeği tavuk döner dürüm ve ayran,success,Tavuk Döner Dürüm,1 porsiyon (200g),False
+variants,9,öğle yemeği tavuk döner dürüm ve ayran,success,Ayran,1 adet (250ml),False
+variants,10,akşam 150 gr ızgara piliç fileto ve patates haşlama,success,Izgara Piliç Fileto,150 gr,False
+variants,10,akşam 150 gr ızgara piliç fileto ve patates haşlama,success,Patates Haşlama,1 porsiyon (100g),False
+variants,11,sucuklu yumurta ve 2 dilim ekmek,success,Sucuklu Yumurta,1 porsiyon (100g),False
+variants,11,sucuklu yumurta ve 2 dilim ekmek,success,Ekmek,2 dilim (60g),False
+variants,12,1 yemek kaşığı zeytinyağ ve bir tabak çoban salatası,success,Zeytinyağ,1 yemek kaşığı,False
+variants,12,1 yemek kaşığı zeytinyağ ve bir tabak çoban salatası,success,Çoban Salatası,bir tabak,False
+variants,13,"kahvaltı: tahin pekmez, iki dilim ekmek ve kaşar",success,Tahin Pekmez,iki dilim,False
+variants,13,"kahvaltı: tahin pekmez, iki dilim ekmek ve kaşar",success,Ekmek,iki dilim,False
+variants,13,"kahvaltı: tahin pekmez, iki dilim ekmek ve kaşar",success,Kaşar,bir porsiyon,False
+variants,14,elma çayı ve 2 adet kurabiye,success,Elma Çayı,1 adet (200ml),False
+variants,14,elma çayı ve 2 adet kurabiye,success,Kurabiye,2 adet (60g),False
+variants,15,1 kase sütlaç ve bir fincan türk kahvesi,success,Sütlaç,1 kase (200g),False
+variants,15,1 kase sütlaç ve bir fincan türk kahvesi,success,Türk Kahvesi,bir fincan (80ml),False
+variants,16,peynirli gözleme ve ayran,success,Peynirli Gözleme,1 porsiyon (150g),False
+variants,16,peynirli gözleme ve ayran,success,Ayran,1 adet (200ml),False
+variants,17,akşam 200 gr kokoreç,success,Kokoreç,200 gr,False
+variants,18,öğlen kısır ve yoğurt,success,Öğlen Kısır,1 adet (150g),False
+variants,18,öğlen kısır ve yoğurt,success,Yoğurt,1 adet (150g),False
+variants,19,bir porsiyon karnıyarık ve pilav,success,Karnıyarık,bir porsiyon,False
+variants,19,bir porsiyon karnıyarık ve pilav,success,Pilav,bir porsiyon,False
+variants,20,hamsi tava ve mısır ekmeği,success,Hamsi Tava,1 porsiyon (150g),False
+variants,20,hamsi tava ve mısır ekmeği,success,Mısır Ekmeği,1 porsiyon (40g),False
+variants,21,bir tabak patlıcan kızartması,success,Patlıcan Kızartması,bir tabak,False
+variants,22,2 adet haşlanmış mısır koçanı,success,Haşlanmış Mısır Koçanı,2 adet,False
+variants,23,öğleden sonra bir kase çilekli yoğurt,success,Çilekli Yoğurt,bir kase,False
+variants,24,akşam yemeği: etli kuru fasulye ve bulgur,success,Etli Kuru Fasulye,1 porsiyon (150g),False
+variants,24,akşam yemeği: etli kuru fasulye ve bulgur,success,Bulgur,1 çaykalı (150g),False
+variants,25,two hard boiled eggs and a slice of sourdough,success,hard boiled eggs,two large,False
+variants,25,two hard boiled eggs and a slice of sourdough,success,sourdough,a slice,False
+variants,26,sunny side up eggs with wholemeal toast,success,sunny side up eggs,2 large,False
+variants,26,sunny side up eggs with wholemeal toast,success,wholemeal toast,2 slices,False
+variants,27,a bowl of porridge with sliced banana,success,porridge,a bowl (200ml),False
+variants,27,a bowl of porridge with sliced banana,success,sliced banana,1 medium (120g),False
+variants,28,jasmine rice with grilled salmon,success,jasmine rice,1 cup (150g),False
+variants,28,jasmine rice with grilled salmon,success,grilled salmon,1 piece (120g),False
+variants,29,smoked salmon bagel with cream cheese,success,smoked salmon bagel with cream cheese,1 item (100g),False
+variants,30,canned tuna in oil with rocket leaves,success,canned tuna in oil,1 can (120g),False
+variants,30,canned tuna in oil with rocket leaves,success,rocket leaves,1 serving (100g),False
+variants,31,a diet coke and a bag of crisps,success,diet coke,a can (330ml),False
+variants,31,a diet coke and a bag of crisps,success,bag of crisps,a bag (100g),False
+variants,32,sparkling water and some mixed nuts,success,sparkling water,some,False
+variants,32,sparkling water and some mixed nuts,success,mixed nuts,some,False
+variants,33,an espresso and a croissant,success,espresso,1 shot (25ml),False
+variants,33,an espresso and a croissant,success,croissant,1 piece (60g),False
+variants,34,a latte and a blueberry muffin,success,Latte,1 cup (240ml),False
+variants,34,a latte and a blueberry muffin,success,Blueberry Muffin,1 item (120g),False
+variants,35,roasted garbanzos and summer squash,success,roasted garbanzos,1 cup (150g),False
+variants,35,roasted garbanzos and summer squash,success,summer squash,1 medium (100g),False
+variants,36,a glass of skim milk and a spoon of peanut butter,success,skim milk,a glass (240ml),False
+variants,36,a glass of skim milk and a spoon of peanut butter,success,peanut butter,a spoon (16g),False
+variants,37,earl grey tea and two digestive biscuits,success,earl grey tea,1 cup (240ml),False
+variants,37,earl grey tea and two digestive biscuits,success,digestive biscuits,2 pieces (60g),False
+variants,38,a big plate of pancakes with maple syrup,success,pancakes,a big plate,False
+variants,38,a big plate of pancakes with maple syrup,success,maple syrup,with,False
+variants,39,string cheese and an OJ,success,string cheese,1 piece (80g),False
+variants,39,string cheese and an OJ,success,OJ,1 cup (240ml),False
+variants,40,three squares of 70% dark chocolate,success,70% dark chocolate,three squares (15g each),False
+variants,41,caesar salad with grilled chicken,success,Caesar Salad,1 serving (150g),False
+variants,41,caesar salad with grilled chicken,success,Grilled Chicken,1 piece (100g),False
+variants,42,a hot dog and a soda,success,Hot Dog,a hot dog,False
+variants,42,a hot dog and a soda,success,Soda,a soda,False
+variants,43,brekfast: two bannanas and a yohurt,success,Bannanas,two,False
+variants,43,brekfast: two bannanas and a yohurt,success,Yohurt,one,False
+variants,44,"lunch was brocoli, spinnach and avacado",success,Brocoli,1 medium,False
+variants,44,"lunch was brocoli, spinnach and avacado",success,Spinnach,1 cup (150g),False
+variants,44,"lunch was brocoli, spinnach and avacado",success,Avacado,1 medium,False
+variants,45,a handful of pistachos and some cashews,success,pistachos,a handful,False
+variants,45,a handful of pistachos and some cashews,success,cashews,some,False
+variants,46,"kahvalti: haslanmis yumurta, beyz peynir, zeytn",success,Haslanmis Yumurta,1 adet (100g),False
+variants,46,"kahvalti: haslanmis yumurta, beyz peynir, zeytn",success,Beyz Peynir,1 adet (10g),False
+variants,46,"kahvalti: haslanmis yumurta, beyz peynir, zeytn",success,Zeytn,1 porsiyon (100g),False
+variants,47,kahvaltıda sunny side up yumurta ve sourdough ekmek,success,Sunny Side Up Yumurta,1 porsiyon (120g),False
+variants,47,kahvaltıda sunny side up yumurta ve sourdough ekmek,success,Sourdough Ekmek,1 porsiyon (100g),False
+variants,48,lunch'ta tavuk döner ve diet kola,success,Tavuk Döner,1 porsiyon (200g),False
+variants,48,lunch'ta tavuk döner ve diet kola,success,Diet Kola,1 can (330ml),False
+variants,49,1 cup laktozsuz süt ve granola,success,Laktozsuz Süt,1 cup,False
+variants,49,1 cup laktozsuz süt ve granola,success,Granola,1 porsiyon (150g),False
+variants,50,akşam grilled levrek ve roka salad,success,grilled levrek,1 piece (150g),False
+variants,50,akşam grilled levrek ve roka salad,success,roka salad,1 serving (150g),False
+variants,51,dinner: imam bayıldı and jasmine rice,success,Imam Bayıldı,1 serving (250g),False
+variants,51,dinner: imam bayıldı and jasmine rice,success,Jasmine Rice,1 cup (150g),False
+variants,52,snack: kuru incir ve fındık,success,Kuru İncir,1 adet (100g),False
+variants,52,snack: kuru incir ve fındık,success,Fındık,1 porsiyon (100g),False

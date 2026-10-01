@@ -1,0 +1,34 @@
+{
+  "lambda": 3.0,
+  "fuzzy": 0.6,
+  "E0 MiniLM lowercase": {
+    "B_best_T": 0.98,
+    "B_net": 40.0,
+    "B_correct": 46,
+    "B_wrong": 2,
+    "C_best_T": "off",
+    "C_net": 56.0,
+    "C_correct": 56,
+    "C_wrong": 0
+  },
+  "E1 MiniLM original casing": {
+    "B_best_T": 0.96,
+    "B_net": 29.0,
+    "B_correct": 32,
+    "B_wrong": 1,
+    "C_best_T": "off",
+    "C_net": 56.0,
+    "C_correct": 56,
+    "C_wrong": 0
+  },
+  "E2 e5-small lowercase": {
+    "B_best_T": 0.96,
+    "B_net": 49.0,
+    "B_correct": 49,
+    "B_wrong": 0,
+    "C_best_T": "off",
+    "C_net": 56.0,
+    "C_correct": 56,
+    "C_wrong": 0
+  }
+}

@@ -36,7 +36,7 @@ def fold(text: str) -> str:
     return " ".join(text.translate(_TURKISH_FOLD).lower().split())
 
 
-def embedding_text(text: str) -> str:
+def embedding_text(text: str, lowercase: bool = True) -> str:
     """Normalize text before embedding: lowercase, but keep Turkish letters.
 
     The embedding model is case-sensitive for Turkish ("tavuk göğsü" vs
@@ -45,4 +45,6 @@ def embedding_text(text: str) -> str:
     Known limit: a capital "I" becomes "i", although in Turkish words it
     stands for "ı" ("Izgara" -> "izgara", not "ızgara").
     """
+    if not lowercase:
+        return " ".join(text.split())
     return " ".join(text.replace("İ", "i").lower().split())

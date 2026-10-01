@@ -37,3 +37,7 @@ def test_fold(text: str, expected: str) -> None:
 )
 def test_embedding_text(text: str, expected: str) -> None:
     assert embedding_text(text) == expected
+
+
+def test_embedding_text_can_keep_original_casing() -> None:
+    assert embedding_text("  Tavuk  Göğsü ", lowercase=False) == "Tavuk Göğsü"

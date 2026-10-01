@@ -21,20 +21,28 @@ class Embedder(Protocol):
 
 
 class SentenceTransformerEmbedder:
-    """Embedder backed by a sentence-transformers model on CPU."""
+    """Embedder backed by a sentence-transformers model on CPU.
 
-    def __init__(self, model_name: str) -> None:
+    ``prefix`` is prepended to every text (e5 models expect "query: ");
+    ``lowercase`` controls casing normalization (see app.text.embedding_text).
+    """
+
+    def __init__(
+        self, model_name: str, prefix: str = "", lowercase: bool = True
+    ) -> None:
         # Imported here: torch is heavy and not needed by most unit tests.
         from sentence_transformers import SentenceTransformer
 
         self._model = SentenceTransformer(model_name, device="cpu")
+        self._prefix = prefix
+        self._lowercase = lowercase
         self.model_name = model_name
         self.dimension = int(self._model.get_sentence_embedding_dimension())
 
     def embed(self, texts: Sequence[str]) -> np.ndarray:
         """Return one normalized float32 vector per text (cosine = dot product)."""
         return self._model.encode(
-            [embedding_text(text) for text in texts],
+            [self._prefix + embedding_text(t, self._lowercase) for t in texts],
             normalize_embeddings=True,
             convert_to_numpy=True,
         ).astype(np.float32)
