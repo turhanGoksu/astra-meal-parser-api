@@ -1,0 +1,257 @@
+"""Public API: meal text in, foods, grams and nutrition out.
+
+    from astra_nutrition import Analyzer
+    result = Analyzer().analyze("2 yumurta, biraz pilav")
+    print(result.totals.kcal, result.totals.complete)
+
+Every item gets an explicit status, and the totals say whether they include
+estimates or leave items out. Nothing is guessed silently.
+"""
+
+import threading
+from collections.abc import Iterable
+from enum import StrEnum
+from pathlib import Path
+
+from pydantic import BaseModel, Field
+
+from astra_nutrition.amounts import (
+    AmountStatus,
+    ground_note_weight,
+    parse_amount,
+    to_grams,
+)
+from astra_nutrition.embeddings import Embedder
+from astra_nutrition.foods import FoodTable
+from astra_nutrition.index.memory import MemoryFoodIndex
+from astra_nutrition.matcher import (
+    FoodIndex,
+    FoodMatcher,
+    Judge,
+    MatchConfig,
+    MatchMethod,
+    Strategy,
+)
+from astra_nutrition.model import default_model_path
+from astra_nutrition.parser import MealParser, ParsedItem, ParseStatus, RejectedItem
+
+# Chosen on the dev set (lambda = 3): exact -> fuzzy (pg_trgm >= 0.60), with
+# the embedding-threshold stage off. See the evaluation in the README.
+DEFAULT_MATCH_CONFIG = MatchConfig(
+    Strategy.HYBRID, fuzzy_threshold=0.60, embedding_threshold=None
+)
+
+
+class ItemStatus(StrEnum):
+    """How one item contributes to the totals."""
+
+    OK = "ok"  # food found, grams measured or converted
+    ESTIMATED = "estimated"  # food found, vague/missing amount: default portion
+    AMOUNT_UNKNOWN = "amount_unknown"  # food found, amount unreadable: not counted
+    UNMATCHED = "unmatched"  # food not in the table: not counted
+
+
+class Nutrition(BaseModel):
+    kcal: float
+    protein_g: float
+    carbs_g: float
+    fat_g: float
+
+
+class ItemResult(BaseModel):
+    """One food item of the meal."""
+
+    name: str
+    amount: str
+    status: ItemStatus
+    food_id: str | None = None
+    food_name_en: str | None = None
+    food_name_tr: str | None = None
+    match_method: MatchMethod | None = None
+    match_similarity: float | None = None
+    # When unmatched: the closest food we refused (for debugging, never counted).
+    best_candidate_food_id: str | None = None
+    grams: float | None = None
+    amount_status: AmountStatus | None = None
+    amount_detail: str | None = None
+    nutrition: Nutrition | None = None
+    note: str | None = None
+
+
+class Totals(BaseModel):
+    """Sums over counted items (ok + estimated), with honesty flags."""
+
+    kcal: float
+    protein_g: float
+    carbs_g: float
+    fat_g: float
+    items: int
+    counted: int
+    estimated: int
+    amount_unknown: int
+    unmatched: int
+    includes_estimates: bool  # some counted grams are default portions
+    complete: bool  # every item is counted
+
+
+class AnalysisResult(BaseModel):
+    meal_text: str | None
+    parse_status: ParseStatus | None  # None when items were given directly
+    parse_error: str | None = None
+    rejected_items: list[RejectedItem] = Field(default_factory=list)
+    items: list[ItemResult]
+    totals: Totals
+
+
+class Analyzer:
+    """Analyzes meals against a food table. Create once, reuse (thread-safe).
+
+    Defaults: the bundled table, an in-memory index, the dev-tuned matching
+    configuration, no LLM judge, and the GGUF parser loaded on first use.
+    """
+
+    def __init__(
+        self,
+        *,
+        table: FoodTable | None = None,
+        index: FoodIndex | None = None,
+        parser: MealParser | None = None,
+        model_path: str | Path | None = None,
+        embedder: Embedder | None = None,
+        judge: Judge | None = None,
+        match_config: MatchConfig = DEFAULT_MATCH_CONFIG,
+        n_threads: int | None = None,
+    ) -> None:
+        self.table = table or FoodTable.bundled()
+        index = index or MemoryFoodIndex(self.table.rows, embedder)
+        self._matcher = FoodMatcher(index, embedder, match_config, judge=judge)
+        self._parser = parser
+        self._model_path = Path(model_path) if model_path else None
+        self._n_threads = n_threads
+        self._parser_lock = threading.Lock()
+
+    @property
+    def parser(self) -> MealParser:
+        """The meal parser, loaded (and downloaded if needed) on first use."""
+        with self._parser_lock:
+            if self._parser is None:
+                path = self._model_path or default_model_path()
+                self._parser = MealParser.from_path(path, n_threads=self._n_threads)
+            return self._parser
+
+    def analyze(self, meal_text: str) -> AnalysisResult:
+        """Parse a meal description and compute its nutrition."""
+        parsed = self.parser.parse(meal_text)
+        result = self.analyze_items(parsed.items, meal_text=meal_text)
+        result.parse_status = parsed.status
+        result.parse_error = parsed.error
+        result.rejected_items = parsed.rejected_items
+        return result
+
+    def analyze_items(
+        self,
+        items: Iterable[ParsedItem | tuple[str, str]],
+        meal_text: str | None = None,
+    ) -> AnalysisResult:
+        """Compute nutrition for already-parsed (name, amount) items.
+
+        With ``meal_text``, weights the parser added in parentheses are used
+        only if the user actually wrote them.
+        """
+        results: list[ItemResult] = []
+        raw: list[tuple[float, float, float, float]] = []
+        for item in items:
+            if isinstance(item, tuple):
+                item = ParsedItem(name=item[0], amount=item[1])
+            result, values = self._analyze_item(item, meal_text)
+            results.append(result)
+            if values is not None:
+                raw.append(values)
+        return AnalysisResult(
+            meal_text=meal_text,
+            parse_status=None,
+            items=results,
+            totals=_totals(results, raw),
+        )
+
+    def _analyze_item(
+        self, item: ParsedItem, meal_text: str | None
+    ) -> tuple[ItemResult, tuple[float, float, float, float] | None]:
+        match = self._matcher.match(item.name)
+        if not match.matched or match.food_id is None:
+            best = match.best_candidate
+            return ItemResult(
+                name=item.name,
+                amount=item.amount,
+                status=ItemStatus.UNMATCHED,
+                best_candidate_food_id=best.food_id if best else None,
+                note=match.note,
+            ), None
+
+        food = self.table.get(match.food_id)
+        amount = parse_amount(item.amount)
+        if meal_text is not None:
+            amount = ground_note_weight(amount, meal_text)
+        grams = to_grams(amount, self.table.portions(food.id))
+        result = ItemResult(
+            name=item.name,
+            amount=item.amount,
+            status=ItemStatus.AMOUNT_UNKNOWN,
+            food_id=food.id,
+            food_name_en=food.name_en,
+            food_name_tr=food.name_tr,
+            match_method=match.method,
+            match_similarity=match.similarity,
+            grams=grams.grams,
+            amount_status=grams.status,
+            amount_detail=grams.detail,
+        )
+        if grams.grams is None:
+            return result, None
+
+        factor = grams.grams / 100
+        values = (
+            food.kcal_100g * factor,
+            food.protein_100g * factor,
+            food.carbs_100g * factor,
+            food.fat_100g * factor,
+        )
+        result.status = (
+            ItemStatus.ESTIMATED
+            if grams.status == AmountStatus.ASSUMED_PORTION
+            else ItemStatus.OK
+        )
+        result.nutrition = _nutrition(values)
+        return result, values
+
+
+def _nutrition(values: tuple[float, float, float, float]) -> Nutrition:
+    kcal, protein, carbs, fat = values
+    return Nutrition(
+        kcal=round(kcal, 1),
+        protein_g=round(protein, 1),
+        carbs_g=round(carbs, 1),
+        fat_g=round(fat, 1),
+    )
+
+
+def _totals(
+    items: list[ItemResult], raw: list[tuple[float, float, float, float]]
+) -> Totals:
+    # Sum unrounded values, round once at the end (no accumulated rounding).
+    sums = [sum(column) for column in zip(*raw, strict=True)] if raw else [0.0] * 4
+    summed = _nutrition((sums[0], sums[1], sums[2], sums[3]))
+    count = {status: 0 for status in ItemStatus}
+    for item in items:
+        count[item.status] += 1
+    counted = count[ItemStatus.OK] + count[ItemStatus.ESTIMATED]
+    return Totals(
+        **summed.model_dump(),
+        items=len(items),
+        counted=counted,
+        estimated=count[ItemStatus.ESTIMATED],
+        amount_unknown=count[ItemStatus.AMOUNT_UNKNOWN],
+        unmatched=count[ItemStatus.UNMATCHED],
+        includes_estimates=count[ItemStatus.ESTIMATED] > 0,
+        complete=counted == len(items),
+    )
