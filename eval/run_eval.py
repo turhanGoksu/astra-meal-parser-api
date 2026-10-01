@@ -1,19 +1,23 @@
-"""Evaluate the matching strategies (Designs A/B/C) on the grouped split.
+"""Evaluate the matching strategies (Designs A/B/C, and C + LLM judge).
 
 Rules enforced in code:
-- `sweep` explores thresholds on the DEV split only;
-- `report` evaluates fixed thresholds; it is the only way to see test numbers.
+- `sweep` explores thresholds on the DEV split only and saves its choice;
+- `judge` measures Design C + LLM judge on the DEV split (nothing to tune);
+- `report` reads the thresholds chosen on dev (no manual numbers) and is the
+  only command that prints test numbers.
 
-The production FoodMatcher is used as-is; only database and embedding calls
-are cached, so sweeps are fast and measure the real matching logic.
+The production FoodMatcher is used as-is; only database, embedding and LLM
+calls are cached (LLM answers on disk), so runs are fast and reproducible.
 
 Usage (from the project root, db running):
     python -m eval.run_eval sweep
-    python -m eval.run_eval report --fuzzy 0.6 --embedding 0.9
+    python -m eval.run_eval judge --provider groq
+    python -m eval.run_eval report [--judge groq] [--judge gemini]
 """
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 from collections.abc import Sequence
@@ -26,7 +30,16 @@ from app.config import get_settings
 from app.db import connect
 from app.embeddings import Embedder, SentenceTransformerEmbedder
 from app.food_index import PgFoodIndex
-from app.matcher import Candidate, FoodIndex, FoodMatcher, MatchConfig, Strategy
+from app.judge import FoodJudge, LlmProvider, RateLimiter, build_provider
+from app.matcher import (
+    Candidate,
+    FoodDetails,
+    FoodIndex,
+    FoodMatcher,
+    Judge,
+    MatchConfig,
+    Strategy,
+)
 
 SPLIT_PATH = Path("data/eval/split.csv")
 RESULTS_DIR = Path("eval/results")
@@ -106,6 +119,9 @@ class CachedIndex:
             self._cache[key] = self._inner.nearest(vector, k)
         return self._cache[key]
 
+    def details(self, food_ids: list[str]) -> dict[str, FoodDetails]:
+        return self._inner.details(food_ids)
+
 
 class CachedEmbedder:
     """Memoizes an Embedder per text."""
@@ -113,6 +129,7 @@ class CachedEmbedder:
     def __init__(self, inner: Embedder) -> None:
         self._inner = inner
         self.model_name = inner.model_name
+        self.signature = inner.signature
         self.dimension = inner.dimension
         self._cache: dict[str, np.ndarray] = {}
 
@@ -191,9 +208,64 @@ def print_table(title: str, rows: list[dict[str, object]]) -> None:
         print("| " + " | ".join(str(r[c]) for c in columns) + " |")
 
 
-def build(fuzzy: float, embedding: float, strategy: Strategy, deps) -> FoodMatcher:
+def build(
+    fuzzy: float,
+    embedding: float,
+    strategy: Strategy,
+    deps,
+    judge: Judge | None = None,
+) -> FoodMatcher:
     index, embedder = deps
-    return FoodMatcher(index, embedder, MatchConfig(strategy, fuzzy, embedding))
+    config = MatchConfig(strategy, fuzzy, embedding)
+    return FoodMatcher(index, embedder, config, judge=judge)
+
+
+class DiskCachedProvider:
+    """Caches LLM answers on disk by prompt; rate-limits only real calls.
+
+    Saves free-tier quota and makes judge results reproducible without keys.
+    """
+
+    def __init__(self, inner: LlmProvider, limiter: RateLimiter, path: Path) -> None:
+        self._inner = inner
+        self._limiter = limiter
+        self._path = path
+        self.name = inner.name
+        self.model = inner.model
+        self._cache: dict[str, str] = (
+            json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+        )
+
+    def complete_json(self, system: str, user: str) -> str:
+        key = hashlib.sha256(
+            f"{self.name}|{self.model}|{system}|{user}".encode()
+        ).hexdigest()
+        if key not in self._cache:
+            self._limiter.wait()
+            self._cache[key] = self._inner.complete_json(system, user)
+            self._path.parent.mkdir(parents=True, exist_ok=True)
+            self._path.write_text(
+                json.dumps(self._cache, indent=1, ensure_ascii=False), encoding="utf-8"
+            )
+        return self._cache[key]
+
+
+def eval_judge(provider_name: str) -> tuple[str, Judge]:
+    """A judge whose answers are cached under eval/results/ (label, judge)."""
+    provider, rpm = build_provider(get_settings(), provider_name)
+    slug = provider.model.replace("/", "_")
+    path = RESULTS_DIR / f"judge_cache_{provider_name}_{slug}.json"
+    cached = DiskCachedProvider(provider, RateLimiter(rpm), path)
+    return f"{provider_name}:{provider.model}", FoodJudge(cached)
+
+
+def selected_on_dev() -> dict[str, float]:
+    """Thresholds chosen by `sweep` (report never takes numbers by hand)."""
+    path = RESULTS_DIR / "dev_sweep.json"
+    if not path.exists():
+        raise SystemExit("Run `python -m eval.run_eval sweep` first.")
+    chosen = json.loads(path.read_text(encoding="utf-8"))["selected"]
+    return {k: NEVER if v == "off" else float(v) for k, v in chosen.items()}
 
 
 def sweep(deps) -> dict[str, object]:
@@ -224,23 +296,55 @@ def sweep(deps) -> dict[str, object]:
     }
     for name, rows in tables.items():
         print_table(f"DEV sweep: {name} ({len(dev)} names, lambda={LAMBDA})", rows)
-    selected = {"lambda": LAMBDA, "fuzzy": best_f, "embedding": fmt(best_t)}
-    print(f"\nSelected on dev: {selected}")
-    return {"selected": selected, **tables}
+    selected = {
+        "b_embedding": fmt(best(b)),
+        "c_fuzzy": best_f,
+        "c_embedding": fmt(best_t),
+    }
+    print(f"\nSelected on dev (lambda={LAMBDA}): {selected}")
+    return {"lambda": LAMBDA, "selected": selected, **tables}
 
 
-def report(fuzzy: float, embedding: float, deps) -> dict[str, list[dict[str, object]]]:
-    results = {}
+def judge_dev(provider_name: str, deps) -> dict[str, object]:
+    """Design C + LLM judge on DEV. Nothing is tuned: F comes from the sweep."""
+    chosen = selected_on_dev()
+    label, judge = eval_judge(provider_name)
+    dev = load_items("dev")
+    rows = []
+    for subset in ("all", "natural", "variants"):
+        part = [i for i in dev if subset == "all" or subset in i.sets]
+        matcher = build(chosen["c_fuzzy"], NEVER, Strategy.HYBRID, deps, judge)
+        rows.append(row(f"C+J {subset}", evaluate(matcher, part)))
+    print_table(f"DEV: Design C + judge ({label})", rows)
+    return {"judge": label, "rows": rows}
+
+
+def report(judges: list[str], deps) -> dict[str, object]:
+    """Final numbers on dev and test with the thresholds chosen on dev."""
+    chosen = selected_on_dev()
+    configs: list[tuple[str, FoodMatcher]] = [
+        ("A", build(NEVER, NEVER, Strategy.EXACT, deps)),
+        ("B", build(NEVER, chosen["b_embedding"], Strategy.EMBEDDING, deps)),
+        (
+            "C",
+            build(chosen["c_fuzzy"], chosen["c_embedding"], Strategy.HYBRID, deps),
+        ),
+    ]
+    for provider_name in judges:
+        label, judge = eval_judge(provider_name)
+        matcher = build(chosen["c_fuzzy"], NEVER, Strategy.HYBRID, deps, judge)
+        configs.append((f"C+J {label}", matcher))
+
+    results: dict[str, object] = {"selected_on_dev": chosen}
     for split in ("dev", "test"):
         items = load_items(split)
         rows = []
-        for design, strategy in DESIGNS.items():
-            matcher = build(fuzzy, embedding, strategy, deps)
+        for design, matcher in configs:
             for subset in ("all", "natural", "variants"):
                 part = [i for i in items if subset == "all" or subset in i.sets]
                 rows.append(row(f"{design} {subset}", evaluate(matcher, part)))
         results[split] = rows
-        print_table(f"{split.upper()} report (F={fuzzy}, T={embedding})", rows)
+        print_table(f"{split.upper()} report", rows)
     return results
 
 
@@ -248,22 +352,28 @@ def main() -> None:
     args = argparse.ArgumentParser(description=__doc__)
     sub = args.add_subparsers(dest="command", required=True)
     sub.add_parser("sweep", help="explore thresholds on the dev split")
-    rep = sub.add_parser("report", help="evaluate fixed thresholds on dev and test")
-    rep.add_argument("--fuzzy", type=float, required=True)
-    rep.add_argument("--embedding", type=float, required=True)
+    jdg = sub.add_parser("judge", help="measure Design C + LLM judge on dev")
+    jdg.add_argument("--provider", choices=["groq", "gemini"], required=True)
+    rep = sub.add_parser("report", help="final numbers on dev and test")
+    rep.add_argument("--judge", choices=["groq", "gemini"], action="append", default=[])
     parsed = args.parse_args()
 
     settings = get_settings()
     embedder = CachedEmbedder(
-        SentenceTransformerEmbedder(settings.embedding_model_name)
+        SentenceTransformerEmbedder(
+            settings.embedding_model_name, prefix=settings.embedding_prefix
+        )
     )
     with connect(settings.database_url) as conn:
-        deps = (CachedIndex(PgFoodIndex(conn, embedder.model_name)), embedder)
+        deps = (CachedIndex(PgFoodIndex(conn, embedder.signature)), embedder)
         if parsed.command == "sweep":
             results = sweep(deps)
             out = RESULTS_DIR / "dev_sweep.json"
+        elif parsed.command == "judge":
+            results = judge_dev(parsed.provider, deps)
+            out = RESULTS_DIR / f"dev_judge_{parsed.provider}.json"
         else:
-            results = report(parsed.fuzzy, parsed.embedding, deps)
+            results = report(parsed.judge, deps)
             out = RESULTS_DIR / "report.json"
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(results, indent=2), encoding="utf-8")

@@ -1,0 +1,50 @@
+{
+  "judge": "gemini:gemini-3.5-flash-lite",
+  "rows": [
+    {
+      "config": "C+J all",
+      "net": 70.0,
+      "n": 118,
+      "coverage": 0.593,
+      "precision": 1.0,
+      "wrong_rate": 0.0,
+      "unmatched": 0.407,
+      "recall_in_table": 0.972,
+      "correct": 70,
+      "wrong_food": 0,
+      "missed": 2,
+      "false_match": 0,
+      "correct_reject": 46
+    },
+    {
+      "config": "C+J natural",
+      "net": 44.0,
+      "n": 66,
+      "coverage": 0.667,
+      "precision": 1.0,
+      "wrong_rate": 0.0,
+      "unmatched": 0.333,
+      "recall_in_table": 0.978,
+      "correct": 44,
+      "wrong_food": 0,
+      "missed": 1,
+      "false_match": 0,
+      "correct_reject": 21
+    },
+    {
+      "config": "C+J variants",
+      "net": 30.0,
+      "n": 58,
+      "coverage": 0.517,
+      "precision": 1.0,
+      "wrong_rate": 0.0,
+      "unmatched": 0.483,
+      "recall_in_table": 0.968,
+      "correct": 30,
+      "wrong_food": 0,
+      "missed": 1,
+      "false_match": 0,
+      "correct_reject": 27
+    }
+  ]
+}

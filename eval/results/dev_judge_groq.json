@@ -1,0 +1,50 @@
+{
+  "judge": "groq:openai/gpt-oss-20b",
+  "rows": [
+    {
+      "config": "C+J all",
+      "net": 66.0,
+      "n": 118,
+      "coverage": 0.593,
+      "precision": 0.986,
+      "wrong_rate": 0.008,
+      "unmatched": 0.407,
+      "recall_in_table": 0.958,
+      "correct": 69,
+      "wrong_food": 1,
+      "missed": 2,
+      "false_match": 0,
+      "correct_reject": 46
+    },
+    {
+      "config": "C+J natural",
+      "net": 43.0,
+      "n": 66,
+      "coverage": 0.652,
+      "precision": 1.0,
+      "wrong_rate": 0.0,
+      "unmatched": 0.348,
+      "recall_in_table": 0.956,
+      "correct": 43,
+      "wrong_food": 0,
+      "missed": 2,
+      "false_match": 0,
+      "correct_reject": 21
+    },
+    {
+      "config": "C+J variants",
+      "net": 27.0,
+      "n": 58,
+      "coverage": 0.534,
+      "precision": 0.968,
+      "wrong_rate": 0.017,
+      "unmatched": 0.466,
+      "recall_in_table": 0.968,
+      "correct": 30,
+      "wrong_food": 1,
+      "missed": 0,
+      "false_match": 0,
+      "correct_reject": 27
+    }
+  ]
+}

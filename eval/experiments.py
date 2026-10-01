@@ -19,9 +19,13 @@ import numpy as np
 
 from app.config import get_settings
 from app.db import connect
-from app.embeddings import Embedder, SentenceTransformerEmbedder
+from app.embeddings import (
+    Embedder,
+    SentenceTransformerEmbedder,
+    embedding_signature,
+)
 from app.food_index import PgFoodIndex
-from app.matcher import Candidate, MatchMethod, Strategy
+from app.matcher import Candidate, FoodDetails, MatchMethod, Strategy
 from eval.run_eval import (
     B_GRID,
     LAMBDA,
@@ -64,6 +68,9 @@ class InMemoryIndex:
     def fuzzy(self, folded: str, k: int) -> list[Candidate]:
         return self._db.fuzzy(folded, k)
 
+    def details(self, food_ids: list[str]) -> dict[str, FoodDetails]:
+        return self._db.details(food_ids)
+
     def nearest(self, vector: np.ndarray, k: int) -> list[Candidate]:
         sims = self._vectors @ vector
         order = np.lexsort((np.arange(len(sims)), -sims))[:k]  # ties: alias id
@@ -80,7 +87,10 @@ def main() -> None:
     dev = load_items("dev")
     summary = {}
     with connect(settings.database_url) as conn:
-        db_index = PgFoodIndex(conn, settings.embedding_model_name)
+        production = embedding_signature(
+            settings.embedding_model_name, settings.embedding_prefix, True
+        )
+        db_index = PgFoodIndex(conn, production)
         for label, (model, prefix, lowercase) in EXPERIMENTS.items():
             embedder = CachedEmbedder(
                 SentenceTransformerEmbedder(model, prefix=prefix, lowercase=lowercase)
