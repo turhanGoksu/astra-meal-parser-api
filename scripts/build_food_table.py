@@ -4,8 +4,9 @@ Inputs:
     data/food_selection.csv  hand-curated names, aliases and portion specs
     USDA SR Legacy CSVs      downloaded into data/raw/ if missing (public domain)
 Outputs:
-    data/foods.csv           one row per food, macros per 100 g
-    data/food_portions.csv   one row per (food, unit) with the source of the grams
+    src/astra_nutrition/data/foods.csv          one row per food, macros per 100 g
+    src/astra_nutrition/data/food_portions.csv  one row per (food, unit) with the
+                                                source of the grams
 
 Every gram value is traceable: a portion either references a USDA household
 measure ("usda:<modifier>") or is an explicit assumption (a plain number).
@@ -22,8 +23,8 @@ import zipfile
 from collections import defaultdict
 from pathlib import Path
 
-from app.amounts import Unit
-from app.text import fold
+from astra_nutrition.amounts import Unit
+from astra_nutrition.text import fold
 
 USDA_URL = (
     "https://fdc.nal.usda.gov/fdc-datasets/"
@@ -32,8 +33,10 @@ USDA_URL = (
 RAW_DIR = Path("data/raw")
 USDA_DIR = RAW_DIR / "sr_legacy" / "FoodData_Central_sr_legacy_food_csv_2018-04"
 SELECTION_PATH = Path("data/food_selection.csv")
-FOODS_PATH = Path("data/foods.csv")
-PORTIONS_PATH = Path("data/food_portions.csv")
+# Written into the package so the table ships with it.
+PACKAGE_DATA = Path("src/astra_nutrition/data")
+FOODS_PATH = PACKAGE_DATA / "foods.csv"
+PORTIONS_PATH = PACKAGE_DATA / "food_portions.csv"
 
 NUTRIENTS = {"1008": "kcal", "1003": "protein", "1005": "carbs", "1004": "fat"}
 SPEC_UNITS = {

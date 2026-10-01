@@ -18,14 +18,13 @@ import json
 import numpy as np
 
 from app.config import get_settings
-from app.db import connect
-from app.embeddings import (
+from astra_nutrition.embeddings import (
     Embedder,
     SentenceTransformerEmbedder,
     embedding_signature,
 )
-from app.food_index import PgFoodIndex
-from app.matcher import Candidate, FoodDetails, MatchMethod, Strategy
+from astra_nutrition.index.postgres import PgFoodIndex, connect
+from astra_nutrition.matcher import Candidate, FoodDetails, MatchMethod, Strategy
 from eval.run_eval import (
     B_GRID,
     LAMBDA,

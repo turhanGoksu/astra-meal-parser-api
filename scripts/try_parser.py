@@ -13,7 +13,7 @@ import llama_cpp
 from llama_cpp import Llama
 
 from app.config import get_settings
-from app.prompts import SYSTEM_PROMPT
+from astra_nutrition.prompts import SYSTEM_PROMPT
 
 SAMPLE_MEALS = [
     "2 yumurta, 100g tavuk göğsü ve 1 muz",

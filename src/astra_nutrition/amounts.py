@@ -21,7 +21,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
 
-from app.text import fold
+from astra_nutrition.text import fold
 
 
 class Unit(StrEnum):

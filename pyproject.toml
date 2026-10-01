@@ -1,7 +1,52 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
 [project]
-name = "astra-meal-parser-api"
-version = "0.1.0"
+name = "astra-nutrition"
+version = "0.1.0.dev0"
+description = "Turkish/English meal text to foods, grams and nutrition: offline GGUF parser, deterministic amounts, traceable USDA-based food table."
 requires-python = ">=3.12"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "turhanGoksu" }]
+keywords = ["nutrition", "calories", "meal parsing", "turkish", "gguf", "llama.cpp"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Natural Language :: Turkish",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+# A library declares compatible ranges; the service pins exact versions in
+# requirements.txt for reproducible Docker builds.
+dependencies = [
+    "pydantic>=2.11,<3",
+    "numpy>=2.0",
+    "llama-cpp-python>=0.3.35,<0.4",
+    "huggingface-hub>=1.3,<2",
+]
+
+[project.optional-dependencies]
+# LLM judge for items exact/fuzzy matching cannot resolve. Embeddings retrieve
+# the candidates; torch comes with them, so it is not in the default install.
+judge = [
+    "sentence-transformers>=6.1,<7",
+    "torch>=2.2",
+    "httpx>=0.28,<1",
+]
+# PostgreSQL + pgvector backend instead of the in-memory default.
+postgres = [
+    "psycopg[binary]>=3.3,<4",
+    "pgvector>=0.5,<0.6",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/astra_nutrition"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/astra_nutrition", "LICENSE", "pyproject.toml"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
@@ -12,3 +57,6 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["astra_nutrition", "app", "eval", "scripts"]

@@ -1,5 +1,7 @@
 # Development and CI dependencies (never installed into the Docker image).
 -r requirements.txt
+# The astra-nutrition package itself, editable (its deps are pinned above).
+-e .
 
 ruff==0.16.9
 pytest==9.1.1

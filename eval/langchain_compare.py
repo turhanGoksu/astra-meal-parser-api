@@ -20,9 +20,8 @@ from langchain_core.embeddings import Embeddings
 from langchain_postgres import PGVector
 
 from app.config import get_settings
-from app.db import connect
-from app.embeddings import SentenceTransformerEmbedder
-from app.food_index import PgFoodIndex
+from astra_nutrition.embeddings import SentenceTransformerEmbedder
+from astra_nutrition.index.postgres import PgFoodIndex, connect
 from eval.run_eval import RESULTS_DIR, load_items
 
 COLLECTION = "astra_foods_langchain"

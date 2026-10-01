@@ -20,11 +20,10 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any, Protocol
 
-from llama_cpp import Llama
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
-from app.prompts import SYSTEM_PROMPT
-from app.text import fold
+from astra_nutrition.prompts import SYSTEM_PROMPT
+from astra_nutrition.text import fold
 
 logger = logging.getLogger(__name__)
 
@@ -180,6 +179,9 @@ class MealParser:
         resplit_merged: bool = True,
     ) -> "MealParser":
         """Load the GGUF model from disk (slow: call once at startup)."""
+        # Imported here so `import astra_nutrition` stays fast and light.
+        from llama_cpp import Llama
+
         llm = Llama(
             model_path=str(model_path),
             n_ctx=n_ctx,

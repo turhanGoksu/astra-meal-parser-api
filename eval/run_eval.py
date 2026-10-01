@@ -27,11 +27,11 @@ from pathlib import Path
 import numpy as np
 
 from app.config import get_settings
-from app.db import connect
-from app.embeddings import Embedder, SentenceTransformerEmbedder
-from app.food_index import PgFoodIndex
-from app.judge import FoodJudge, LlmProvider, RateLimiter, build_provider
-from app.matcher import (
+from app.factory import provider_from_settings
+from astra_nutrition.embeddings import Embedder, SentenceTransformerEmbedder
+from astra_nutrition.index.postgres import PgFoodIndex, connect
+from astra_nutrition.judge import FoodJudge, LlmProvider, RateLimiter
+from astra_nutrition.matcher import (
     Candidate,
     FoodDetails,
     FoodIndex,
@@ -252,7 +252,7 @@ class DiskCachedProvider:
 
 def eval_judge(provider_name: str) -> tuple[str, Judge]:
     """A judge whose answers are cached under eval/results/ (label, judge)."""
-    provider, rpm = build_provider(get_settings(), provider_name)
+    provider, rpm = provider_from_settings(get_settings(), provider_name)
     slug = provider.model.replace("/", "_")
     path = RESULTS_DIR / f"judge_cache_{provider_name}_{slug}.json"
     cached = DiskCachedProvider(provider, RateLimiter(rpm), path)

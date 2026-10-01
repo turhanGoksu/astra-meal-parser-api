@@ -1,16 +1,14 @@
 """Tests for the food table builder helpers and the committed table files.
 
-The data tests read data/foods.csv and data/food_portions.csv, so they run in
-CI without downloading USDA data.
+The data tests read the table files bundled in the package, so they run in CI
+without downloading USDA data.
 """
-
-import csv
-from pathlib import Path
 
 import pytest
 
-from app.amounts import Unit
-from app.text import fold
+from astra_nutrition.amounts import Unit
+from astra_nutrition.tables import read_table
+from astra_nutrition.text import fold
 from scripts.build_food_table import find_portion, parse_spec, volume_ml
 
 PORTIONS = [
@@ -55,13 +53,8 @@ def test_parse_spec() -> None:
     ]
 
 
-def _read(path: str) -> list[dict[str, str]]:
-    with open(Path(path), encoding="utf-8") as f:
-        return list(csv.DictReader(f))
-
-
-FOODS = _read("data/foods.csv")
-FOOD_PORTIONS = _read("data/food_portions.csv")
+FOODS = read_table("foods.csv")
+FOOD_PORTIONS = read_table("food_portions.csv")
 
 
 def test_food_ids_are_unique() -> None:

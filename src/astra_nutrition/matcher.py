@@ -21,8 +21,8 @@ from typing import Protocol
 
 import numpy as np
 
-from app.embeddings import Embedder
-from app.text import fold
+from astra_nutrition.embeddings import Embedder
+from astra_nutrition.text import fold
 
 
 class Strategy(StrEnum):

@@ -2,7 +2,7 @@
 
 import pytest
 
-from app.text import embedding_text, fold
+from astra_nutrition.text import embedding_text, fold
 
 
 def test_plain_lower_is_not_turkish_aware() -> None:

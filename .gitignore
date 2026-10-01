@@ -27,3 +27,7 @@ pgdata/
 
 # Raw third-party downloads (large, reproducible via scripts)
 data/raw/
+
+# Package build output
+dist/
+build/

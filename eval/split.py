@@ -18,7 +18,7 @@ import random
 from collections import defaultdict
 from pathlib import Path
 
-from app.text import fold
+from astra_nutrition.text import fold
 
 LABELS_PATH = Path("data/eval/labels.csv")
 PARSED_PATH = Path("data/eval/parsed_items.csv")

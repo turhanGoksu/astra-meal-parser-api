@@ -4,7 +4,7 @@ from collections.abc import Sequence
 
 import numpy as np
 
-from app.matcher import (
+from astra_nutrition.matcher import (
     Candidate,
     FoodDetails,
     FoodMatcher,

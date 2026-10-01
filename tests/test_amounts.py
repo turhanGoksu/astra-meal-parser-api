@@ -2,7 +2,7 @@
 
 import pytest
 
-from app.amounts import (
+from astra_nutrition.amounts import (
     AmountKind,
     AmountStatus,
     FoodPortions,

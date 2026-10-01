@@ -5,8 +5,7 @@ import json
 import httpx
 import pytest
 
-from app.config import Settings
-from app.judge import (
+from astra_nutrition.judge import (
     GEMINI_BASE_URL,
     GROQ_CHAT_URL,
     FoodJudge,
@@ -17,7 +16,7 @@ from app.judge import (
     build_prompt,
     parse_verdict,
 )
-from app.matcher import FoodDetails
+from astra_nutrition.matcher import FoodDetails
 
 CANDIDATES = [
     FoodDetails("grapes", "Grapes", "Üzüm", 69.0),
@@ -156,18 +155,10 @@ def test_rate_limiter_spaces_calls() -> None:
     assert sleeps == [2.0, 2.0]  # 60 s / 30 requests
 
 
-def test_build_judge_is_off_by_default_and_names_missing_settings() -> None:
-    assert build_judge(Settings(_env_file=None)) is None
-    with pytest.raises(RuntimeError, match="GROQ_API_KEY, GROQ_MODEL, GROQ_RPM"):
-        build_judge(Settings(_env_file=None, llm_judge_provider="groq"))
+def test_build_judge_for_a_known_provider() -> None:
+    assert isinstance(build_judge("gemini", "k", "m", rpm=10), FoodJudge)
 
 
-def test_build_judge_with_full_settings() -> None:
-    settings = Settings(
-        _env_file=None,
-        llm_judge_provider="gemini",
-        gemini_api_key="k",
-        gemini_model="m",
-        gemini_rpm=10,
-    )
-    assert isinstance(build_judge(settings), FoodJudge)
+def test_build_judge_rejects_unknown_providers() -> None:
+    with pytest.raises(ValueError, match="unknown provider"):
+        build_judge("openai", "k", "m", rpm=10)

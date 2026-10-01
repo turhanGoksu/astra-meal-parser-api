@@ -1,4 +1,4 @@
-"""Load data/foods.csv and data/food_portions.csv into PostgreSQL + pgvector.
+"""Load the bundled food table (foods.csv, food_portions.csv) into PostgreSQL.
 
 Idempotent: the tables are emptied and reloaded in a single transaction, so a
 failed run leaves the previous data untouched.
@@ -7,17 +7,13 @@ Usage (from the project root, with the db service running):
     python -m scripts.ingest_foods
 """
 
-import csv
 from datetime import UTC, datetime
-from pathlib import Path
 
 from app.config import get_settings
-from app.db import apply_schema, connect
-from app.embeddings import Embedder, SentenceTransformerEmbedder
-from app.text import embedding_text, fold
-
-FOODS_PATH = Path("data/foods.csv")
-PORTIONS_PATH = Path("data/food_portions.csv")
+from astra_nutrition.embeddings import Embedder, SentenceTransformerEmbedder
+from astra_nutrition.index.postgres import apply_schema, connect
+from astra_nutrition.tables import read_table
+from astra_nutrition.text import embedding_text, fold
 
 
 def alias_rows(foods: list[dict[str, str]]) -> list[tuple[str, str, str, str]]:
@@ -53,10 +49,10 @@ def typed_food(row: dict[str, str]) -> dict[str, object]:
 
 def ingest(embedder: Embedder, database_url: str | None) -> dict[str, int]:
     """Embed every alias and reload all nutrition tables."""
-    with open(FOODS_PATH, encoding="utf-8") as f:
-        foods = list(csv.DictReader(f))
-    with open(PORTIONS_PATH, encoding="utf-8") as f:
-        portions = [{**p, "grams": float(p["grams"])} for p in csv.DictReader(f)]
+    foods = read_table("foods.csv")
+    portions = [
+        {**p, "grams": float(p["grams"])} for p in read_table("food_portions.csv")
+    ]
     aliases = alias_rows(foods)
     vectors = embedder.embed([alias for _, alias, _, _ in aliases])
 

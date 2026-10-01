@@ -19,8 +19,7 @@ from typing import Protocol
 import httpx
 from pydantic import BaseModel, ValidationError
 
-from app.config import Settings
-from app.matcher import FoodDetails, JudgeVerdict
+from astra_nutrition.matcher import FoodDetails, JudgeVerdict
 
 logger = logging.getLogger(__name__)
 
@@ -213,33 +212,42 @@ def _retry_after(response: httpx.Response) -> float | None:
         return None
 
 
+PROVIDERS: dict[str, type[GroqProvider] | type[GeminiProvider]] = {
+    "groq": GroqProvider,
+    "gemini": GeminiProvider,
+}
+
+
 def build_judge(
-    settings: Settings, client: httpx.Client | None = None
-) -> FoodJudge | None:
-    """The configured judge, or None when LLM_JUDGE_PROVIDER=off."""
-    if settings.llm_judge_provider == "off":
-        return None
-    provider, rpm = build_provider(settings, settings.llm_judge_provider, client)
-    return FoodJudge(provider, RateLimiter(rpm))
+    provider: str,
+    api_key: str,
+    model: str,
+    rpm: int,
+    timeout_seconds: float = 30.0,
+    client: httpx.Client | None = None,
+) -> FoodJudge:
+    """A judge for "groq" or "gemini", rate-limited to ``rpm`` requests/minute.
+
+    Model names and free-tier limits change over time, so the caller passes
+    them in (the service reads them from .env).
+    """
+    return FoodJudge(
+        build_provider(provider, api_key, model, timeout_seconds, client),
+        RateLimiter(rpm),
+    )
 
 
 def build_provider(
-    settings: Settings, name: str, client: httpx.Client | None = None
-) -> tuple[LlmProvider, int]:
-    """A provider and its requests-per-minute limit; fails if settings are missing."""
-    key, model, rpm = {
-        "groq": (settings.groq_api_key, settings.groq_model, settings.groq_rpm),
-        "gemini": (settings.gemini_api_key, settings.gemini_model, settings.gemini_rpm),
-    }[name]
-    prefix = name.upper()
-    missing = [
-        f"{prefix}_{field}"
-        for field, value in (("API_KEY", key), ("MODEL", model), ("RPM", rpm))
-        if not value
-    ]
-    if missing:
-        raise RuntimeError(f"LLM_JUDGE_PROVIDER={name} needs {', '.join(missing)}")
-    assert key is not None and model is not None and rpm is not None
-    client = client or httpx.Client(timeout=settings.llm_timeout_seconds)
-    provider_cls = GroqProvider if name == "groq" else GeminiProvider
-    return provider_cls(client, key.get_secret_value(), model), rpm
+    provider: str,
+    api_key: str,
+    model: str,
+    timeout_seconds: float = 30.0,
+    client: httpx.Client | None = None,
+) -> LlmProvider:
+    """A raw provider (no rate limiting or retries)."""
+    if provider not in PROVIDERS:
+        raise ValueError(
+            f"unknown provider {provider!r}; use one of {sorted(PROVIDERS)}"
+        )
+    client = client or httpx.Client(timeout=timeout_seconds)
+    return PROVIDERS[provider](client, api_key, model)

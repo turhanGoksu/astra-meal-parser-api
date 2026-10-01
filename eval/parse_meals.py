@@ -17,8 +17,8 @@ import csv
 from pathlib import Path
 
 from app.config import get_settings
-from app.parser import MealParser
-from app.text import fold
+from astra_nutrition.parser import MealParser
+from astra_nutrition.text import fold
 
 MEAL_SETS = {
     "natural": Path("data/eval/meals.txt"),

@@ -5,7 +5,7 @@ from typing import Protocol
 
 import numpy as np
 
-from app.text import embedding_text
+from astra_nutrition.text import embedding_text
 
 
 class Embedder(Protocol):

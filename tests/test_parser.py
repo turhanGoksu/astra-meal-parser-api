@@ -4,13 +4,13 @@ from typing import Any
 
 import pytest
 
-from app.parser import (
+from astra_nutrition.parser import (
     MealParser,
     ParseStatus,
     looks_merged,
     validate_output,
 )
-from app.prompts import SYSTEM_PROMPT
+from astra_nutrition.prompts import SYSTEM_PROMPT
 
 
 class FakeLlm:
