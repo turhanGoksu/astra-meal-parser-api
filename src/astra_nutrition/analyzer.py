@@ -67,6 +67,7 @@ class ItemResult(BaseModel):
     food_id: str | None = None
     food_name_en: str | None = None
     food_name_tr: str | None = None
+    food_source: str | None = None  # where the nutrition numbers come from
     match_method: MatchMethod | None = None
     match_similarity: float | None = None
     # When unmatched: the closest food we refused (for debugging, never counted).
@@ -200,6 +201,7 @@ class Analyzer:
             food_id=food.id,
             food_name_en=food.name_en,
             food_name_tr=food.name_tr,
+            food_source=food.source,
             match_method=match.method,
             match_similarity=match.similarity,
             grams=grams.grams,
