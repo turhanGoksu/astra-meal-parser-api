@@ -15,9 +15,19 @@ class Embedder(Protocol):
     """
 
     model_name: str
+    signature: str  # model + text normalization; stored at ingest time
     dimension: int
 
     def embed(self, texts: Sequence[str]) -> np.ndarray: ...
+
+
+def embedding_signature(model_name: str, prefix: str, lowercase: bool) -> str:
+    """Identify everything that changes the vectors, not only the model.
+
+    Vectors made with another prefix or casing are as incomparable as
+    vectors from another model, so all three are checked before searching.
+    """
+    return f"{model_name}|prefix={prefix!r}|lowercase={lowercase}"
 
 
 class SentenceTransformerEmbedder:
@@ -37,6 +47,7 @@ class SentenceTransformerEmbedder:
         self._prefix = prefix
         self._lowercase = lowercase
         self.model_name = model_name
+        self.signature = embedding_signature(model_name, prefix, lowercase)
         self.dimension = int(self._model.get_sentence_embedding_dimension())
 
     def embed(self, texts: Sequence[str]) -> np.ndarray:

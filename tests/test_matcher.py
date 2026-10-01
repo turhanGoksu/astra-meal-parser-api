@@ -6,7 +6,9 @@ import numpy as np
 
 from app.matcher import (
     Candidate,
+    FoodDetails,
     FoodMatcher,
+    JudgeVerdict,
     MatchConfig,
     MatchMethod,
     Strategy,
@@ -18,6 +20,7 @@ class FakeEmbedder:
     look up which text a vector came from."""
 
     model_name = "fake"
+    signature = "fake|prefix=''|lowercase=True"
     dimension = 1
 
     def __init__(self) -> None:
@@ -65,12 +68,29 @@ class FakeIndex:
             for f, a, s in self._nearest.get(text, [])[:k]
         ]
 
+    def details(self, food_ids: list[str]) -> dict[str, FoodDetails]:
+        return {f: FoodDetails(f, f.title(), f, 100.0) for f in food_ids}
 
-def make_matcher(strategy: Strategy, **index_data: dict) -> FoodMatcher:
+
+class FakeJudge:
+    """Returns a preset verdict and records what it was shown."""
+
+    def __init__(self, verdict: JudgeVerdict) -> None:
+        self.verdict = verdict
+        self.seen: list[tuple[str, list[str]]] = []
+
+    def choose(self, item_name: str, candidates: list[FoodDetails]) -> JudgeVerdict:
+        self.seen.append((item_name, [c.food_id for c in candidates]))
+        return self.verdict
+
+
+def make_matcher(
+    strategy: Strategy, judge: FakeJudge | None = None, **index_data: dict
+) -> FoodMatcher:
     embedder = FakeEmbedder()
     index = FakeIndex(embedder, **index_data)
     config = MatchConfig(strategy, fuzzy_threshold=0.5, embedding_threshold=0.93)
-    return FoodMatcher(index, embedder, config)
+    return FoodMatcher(index, embedder, config, judge=judge)
 
 
 # Real scores measured on our table (see Step 6 discussion).
@@ -151,3 +171,57 @@ def test_one_name_pointing_to_two_foods_is_refused() -> None:
 
 def test_blank_name_is_unmatched() -> None:
     assert make_matcher(Strategy.HYBRID, **DATA).match("   ").matched is False
+
+
+# Judge path (Step 8): candidates come from embeddings, the judge decides.
+JUDGE_DATA = {
+    "nearest": {
+        "Kuru Üzüm": [
+            ("grapes", "Üzüm", 0.94),
+            ("grapes", "grapes", 0.93),  # second alias of the same food
+            ("dried_figs", "Kuru incir", 0.90),
+        ],
+        "Yohurt": [("yogurt", "Yoğurt", 0.92), ("greek_yogurt", "greek yogurt", 0.9)],
+    }
+}
+
+
+def test_judge_sees_distinct_foods_and_its_choice_is_used() -> None:
+    judge = FakeJudge(JudgeVerdict("yogurt"))
+    result = make_matcher(Strategy.HYBRID, judge, **JUDGE_DATA).match("Yohurt")
+    assert (result.food_id, result.method, result.similarity) == (
+        "yogurt",
+        MatchMethod.LLM,
+        0.92,
+    )
+    assert judge.seen == [("Yohurt", ["yogurt", "greek_yogurt"])]
+
+
+def test_judge_none_keeps_item_unmatched_with_best_candidate() -> None:
+    judge = FakeJudge(JudgeVerdict(None))
+    result = make_matcher(Strategy.HYBRID, judge, **JUDGE_DATA).match("Kuru Üzüm")
+    assert result.matched is False
+    assert result.best_candidate is not None
+    assert result.best_candidate.food_id == "grapes"
+    assert judge.seen[0][1] == ["grapes", "dried_figs"]  # grapes shown once
+
+
+def test_judge_error_keeps_item_unmatched_with_a_note() -> None:
+    judge = FakeJudge(JudgeVerdict(None, "HTTPStatusError: 429"))
+    result = make_matcher(Strategy.HYBRID, judge, **JUDGE_DATA).match("Kuru Üzüm")
+    assert result.matched is False
+    assert "429" in (result.note or "")
+
+
+def test_judge_id_outside_the_candidates_is_refused() -> None:
+    judge = FakeJudge(JudgeVerdict("raisins"))  # never offered: hallucination
+    result = make_matcher(Strategy.HYBRID, judge, **JUDGE_DATA).match("Kuru Üzüm")
+    assert result.matched is False
+    assert "unknown food id" in (result.note or "")
+
+
+def test_judge_is_not_asked_when_exact_or_fuzzy_already_matched() -> None:
+    judge = FakeJudge(JudgeVerdict("grapes"))
+    result = make_matcher(Strategy.HYBRID, judge, **DATA).match("tavuk gösü")
+    assert result.method == MatchMethod.FUZZY
+    assert judge.seen == []

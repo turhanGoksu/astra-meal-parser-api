@@ -16,7 +16,7 @@ pydantic-settings==2.15.0
 llama-cpp-python==0.3.35
 huggingface-hub==1.33.0
 
-# Embeddings (paraphrase-multilingual-MiniLM-L12-v2)
+# Embeddings (intfloat/multilingual-e5-small, chosen on the dev set)
 sentence-transformers==6.1.0
 torch==2.14.0
 
@@ -24,3 +24,6 @@ torch==2.14.0
 psycopg[binary]==3.3.6
 psycopg-pool==3.3.3
 pgvector==0.5.0
+
+# LLM tie-breaker (optional, off by default): Groq / Gemini over HTTP
+httpx==0.28.1

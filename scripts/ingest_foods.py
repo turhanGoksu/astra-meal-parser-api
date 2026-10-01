@@ -93,6 +93,7 @@ def ingest(embedder: Embedder, database_url: str | None) -> dict[str, int]:
                 "INSERT INTO ingest_metadata (key, value) VALUES (%s, %s)",
                 [
                     ("embedding_model", embedder.model_name),
+                    ("embedding_signature", embedder.signature),
                     ("embedding_dimension", str(embedder.dimension)),
                     ("ingested_at", datetime.now(UTC).isoformat()),
                 ],
@@ -103,7 +104,9 @@ def ingest(embedder: Embedder, database_url: str | None) -> dict[str, int]:
 if __name__ == "__main__":
     settings = get_settings()
     counts = ingest(
-        SentenceTransformerEmbedder(settings.embedding_model_name),
+        SentenceTransformerEmbedder(
+            settings.embedding_model_name, prefix=settings.embedding_prefix
+        ),
         settings.database_url,
     )
     print("Ingested:", ", ".join(f"{v} {k}" for k, v in counts.items()))

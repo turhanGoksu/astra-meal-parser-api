@@ -2,16 +2,20 @@
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 from urllib.parse import quote
 
-from pydantic import model_validator
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     """Typed configuration. Each field maps to an upper-case env variable."""
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # env_ignore_empty: "GROQ_RPM=" in .env means "not set", not an invalid int.
+    model_config = SettingsConfigDict(
+        env_file=".env", extra="ignore", env_ignore_empty=True
+    )
 
     model_repo_id: str = "Turhan123/astra-meal-parser-gguf"
     model_filename: str = "astra-meal-parser-1.5b-q4_k_m.gguf"
@@ -27,14 +31,28 @@ class Settings(BaseSettings):
     postgres_port: int = 5432
     database_url: str | None = None  # optional override; built if not set
 
-    embedding_model_name: str = (
-        "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-    )
+    # Model 2 (e5-small) replaced Model 1 (MiniLM) after the dev evaluation:
+    # recall@5 of candidates 16/16 vs 9/16 on items exact+fuzzy missed.
+    # e5 expects a "query: " prefix on both sides for symmetric matching.
+    embedding_model_name: str = "intfloat/multilingual-e5-small"
+    embedding_prefix: str = "query: "
 
     # PROVISIONAL placeholders: replaced by values tuned on the dev set (Step 7).
     match_strategy: str = "hybrid"
     match_fuzzy_threshold: float = 0.5
     match_embedding_threshold: float = 0.9
+
+    # Step 8: optional LLM judge, off by default. As in Project 4, model names
+    # and free-tier rate limits live in .env: a deprecated model is fixed by
+    # editing .env, not code.
+    llm_judge_provider: Literal["off", "groq", "gemini"] = "off"
+    groq_api_key: SecretStr | None = None
+    groq_model: str | None = None
+    groq_rpm: int | None = Field(default=None, gt=0)
+    gemini_api_key: SecretStr | None = None
+    gemini_model: str | None = None
+    gemini_rpm: int | None = Field(default=None, gt=0)
+    llm_timeout_seconds: float = 30.0
 
     @model_validator(mode="after")
     def build_database_url(self) -> "Settings":

@@ -31,3 +31,11 @@ def test_explicit_database_url_wins() -> None:
 
 def test_no_password_means_no_url() -> None:
     assert Settings(_env_file=None).database_url is None
+
+
+def test_empty_values_in_env_mean_not_set(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("GROQ_RPM", "")
+    monkeypatch.setenv("GROQ_MODEL", "")
+    settings = Settings(_env_file=None)
+    assert settings.groq_rpm is None
+    assert settings.groq_model is None

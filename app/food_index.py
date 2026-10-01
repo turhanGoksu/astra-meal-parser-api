@@ -1,6 +1,6 @@
 """PostgreSQL implementation of the FoodIndex (pg_trgm + pgvector).
 
-All lookups are exact full scans (~430 rows, well under a millisecond): no
+All lookups are exact full scans (~450 rows, well under a millisecond): no
 approximate vector index, so the true nearest neighbor is always found.
 Ties are broken by alias id so results are deterministic across runs.
 """
@@ -8,25 +8,26 @@ Ties are broken by alias id so results are deterministic across runs.
 import numpy as np
 import psycopg
 
-from app.matcher import Candidate, MatchMethod
+from app.matcher import Candidate, FoodDetails, MatchMethod
 
 
 class PgFoodIndex:
-    """FoodIndex backed by the food_aliases table."""
+    """FoodIndex backed by the foods and food_aliases tables."""
 
-    def __init__(self, conn: psycopg.Connection, embedding_model: str) -> None:
+    def __init__(self, conn: psycopg.Connection, embedding_signature: str) -> None:
         row = conn.execute(
-            "SELECT value FROM ingest_metadata WHERE key = 'embedding_model'"
+            "SELECT value FROM ingest_metadata WHERE key = 'embedding_signature'"
         ).fetchone()
         if row is None:
             raise RuntimeError(
-                "Food table is empty: run python -m scripts.ingest_foods"
+                "Food table is empty or outdated: run python -m scripts.ingest_foods"
             )
-        if row[0] != embedding_model:
-            # Vectors from different models are not comparable: fail loudly.
+        if row[0] != embedding_signature:
+            # Vectors from another model, prefix or casing are not comparable.
             raise RuntimeError(
-                f"Stored vectors come from {row[0]!r} but EMBEDDING_MODEL_NAME is "
-                f"{embedding_model!r}. Re-run python -m scripts.ingest_foods."
+                f"Stored vectors were made with {row[0]!r} but the configured "
+                f"embedder is {embedding_signature!r}. "
+                "Re-run python -m scripts.ingest_foods."
             )
         self._conn = conn
 
@@ -53,3 +54,10 @@ class PgFoodIndex:
             (vector, vector, k),
         ).fetchall()
         return [Candidate(f, a, float(s), MatchMethod.EMBEDDING) for f, a, s in rows]
+
+    def details(self, food_ids: list[str]) -> dict[str, FoodDetails]:
+        rows = self._conn.execute(
+            "SELECT id, name_en, name_tr, kcal_100g FROM foods WHERE id = ANY(%s)",
+            (food_ids,),
+        ).fetchall()
+        return {r[0]: FoodDetails(r[0], r[1], r[2], float(r[3])) for r in rows}
