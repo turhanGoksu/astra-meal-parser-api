@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "astra-nutrition"
-version = "0.1.0.dev0"
+version = "0.1.0"
 description = "Turkish/English meal text to foods, grams and nutrition: offline GGUF parser, deterministic amounts, traceable USDA-based food table."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -32,6 +32,7 @@ dependencies = [
 [project.urls]
 Repository = "https://github.com/turhanGoksu/astra-nutrition"
 Issues = "https://github.com/turhanGoksu/astra-nutrition/issues"
+Changelog = "https://github.com/turhanGoksu/astra-nutrition/blob/main/CHANGELOG.md"
 Model = "https://huggingface.co/Turhan123/astra-meal-parser-gguf"
 
 [project.scripts]
@@ -56,7 +57,9 @@ postgres = [
 packages = ["src/astra_nutrition"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/astra_nutrition", "LICENSE", "README.md", "pyproject.toml"]
+include = [
+    "src/astra_nutrition", "LICENSE", "README.md", "CHANGELOG.md", "pyproject.toml",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

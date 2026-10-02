@@ -16,8 +16,9 @@ Total: 327.5 kcal | protein 18.1 g | carbs 28.8 g | fat 16.3 g
 Not counted: 1 unmatched, 0 with an unreadable amount.
 ```
 
-> **Status: alpha (`0.1.0.dev0`).** The API may still change. Nutrition values are
-> estimates from a public reference table; this is not medical or dietary advice.
+> **Status: alpha (`0.1.0`, see [CHANGELOG](CHANGELOG.md)).** The API may still
+> change. Nutrition values are estimates from a public reference table; this is
+> not medical or dietary advice.
 
 ## What it does
 
@@ -36,10 +37,11 @@ Not counted: 1 unmatched, 0 with an unreadable amount.
 ## Quickstart
 
 ```bash
-pip install "git+https://github.com/turhanGoksu/astra-nutrition.git"
+pip install "astra-nutrition @ git+https://github.com/turhanGoksu/astra-nutrition.git@v0.1.0"
 ```
 
-Python 3.12+. `llama-cpp-python` is compiled during install, so a C++ compiler
+`@v0.1.0` installs this release, which never changes; without it you get the
+unreleased `main`. Python 3.12+. `llama-cpp-python` is compiled during install, so a C++ compiler
 and CMake are needed (Xcode command line tools on macOS, `build-essential` on
 Linux). The GGUF model is downloaded to the Hugging Face cache on first use.
 
@@ -198,7 +200,7 @@ optional judge retrieves the 5 closest foods with embeddings
 **same food**, or none.
 
 ```bash
-pip install "astra-nutrition[judge] @ git+https://github.com/turhanGoksu/astra-nutrition.git"
+pip install "astra-nutrition[judge] @ git+https://github.com/turhanGoksu/astra-nutrition.git@v0.1.0"
 ```
 
 ```python
