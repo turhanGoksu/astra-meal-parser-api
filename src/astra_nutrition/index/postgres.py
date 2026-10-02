@@ -13,6 +13,11 @@ import numpy as np
 import psycopg
 from pgvector.psycopg import register_vector
 
+try:  # optional: only the web service uses a pool
+    from psycopg_pool import ConnectionPool
+except ImportError:  # pragma: no cover
+    ConnectionPool = None  # type: ignore[assignment,misc]
+
 from astra_nutrition.matcher import Candidate, FoodDetails, MatchMethod
 
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
@@ -36,12 +41,19 @@ def apply_schema(conn: psycopg.Connection) -> None:
 
 
 class PgFoodIndex:
-    """FoodIndex backed by the foods and food_aliases tables."""
+    """FoodIndex backed by the foods and food_aliases tables.
 
-    def __init__(self, conn: psycopg.Connection, embedding_signature: str) -> None:
-        row = conn.execute(
-            "SELECT value FROM ingest_metadata WHERE key = 'embedding_signature'"
-        ).fetchone()
+    Accepts one connection (scripts, evaluation) or a psycopg_pool
+    ConnectionPool (the web service: each lookup borrows a connection, so
+    concurrent requests never share one).
+    """
+
+    def __init__(self, source, embedding_signature: str) -> None:
+        self._source = source
+        rows = self._rows(
+            "SELECT value FROM ingest_metadata WHERE key = 'embedding_signature'", ()
+        )
+        row = rows[0] if rows else None
         if row is None:
             raise RuntimeError(
                 "Food table is empty or outdated: run python -m scripts.ingest_foods"
@@ -53,22 +65,27 @@ class PgFoodIndex:
                 f"embedder is {embedding_signature!r}. "
                 "Re-run python -m scripts.ingest_foods."
             )
-        self._conn = conn
+
+    def _rows(self, sql: str, params: tuple) -> list[tuple]:
+        if ConnectionPool is not None and isinstance(self._source, ConnectionPool):
+            with self._source.connection() as conn:
+                return conn.execute(sql, params).fetchall()
+        return self._source.execute(sql, params).fetchall()
 
     def exact(self, folded: str) -> list[Candidate]:
-        rows = self._conn.execute(
+        rows = self._rows(
             "SELECT food_id, alias FROM food_aliases WHERE alias_folded = %s "
             "ORDER BY id",
             (folded,),
-        ).fetchall()
+        )
         return [Candidate(f, a, 1.0, MatchMethod.EXACT) for f, a in rows]
 
     def fuzzy(self, folded: str, k: int) -> list[Candidate]:
-        rows = self._conn.execute(
+        rows = self._rows(
             "SELECT food_id, alias, similarity(alias_folded, %s) AS sim "
             "FROM food_aliases ORDER BY sim DESC, id LIMIT %s",
             (folded, k),
-        ).fetchall()
+        )
         # pg_trgm returns float4, which psycopg parses from its text form;
         # re-round to float32 so both backends return bit-identical scores.
         return [
@@ -76,16 +93,16 @@ class PgFoodIndex:
         ]
 
     def nearest(self, vector: np.ndarray, k: int) -> list[Candidate]:
-        rows = self._conn.execute(
+        rows = self._rows(
             "SELECT food_id, alias, 1 - (embedding <=> %s) AS sim "
             "FROM food_aliases ORDER BY embedding <=> %s, id LIMIT %s",
             (vector, vector, k),
-        ).fetchall()
+        )
         return [Candidate(f, a, float(s), MatchMethod.EMBEDDING) for f, a, s in rows]
 
     def details(self, food_ids: list[str]) -> dict[str, FoodDetails]:
-        rows = self._conn.execute(
+        rows = self._rows(
             "SELECT id, name_en, name_tr, kcal_100g FROM foods WHERE id = ANY(%s)",
             (food_ids,),
-        ).fetchall()
+        )
         return {r[0]: FoodDetails(r[0], r[1], r[2], float(r[3])) for r in rows}

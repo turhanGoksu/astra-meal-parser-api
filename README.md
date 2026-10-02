@@ -70,6 +70,34 @@ astra-nutrition "..." --model ./model.gguf        # use a local GGUF file
 Exit codes: `0` analyzed, `1` the parser could not read the meal, `2` bad input
 (for example a food file with problems).
 
+## Web API
+
+A thin FastAPI layer over the library (`app/`). Run it from the project root
+after `pip install -r requirements.txt` and `python -m scripts.download_model`:
+
+```bash
+uvicorn app.main:app
+```
+
+| Endpoint | What it does |
+|---|---|
+| `POST /analyze` `{"meal_text": "..."}` | The library's `AnalysisResult` as JSON (max 1000 characters) |
+| `GET /foods/search?q=...&k=5` | Candidates from every matching stage with scores, for inspection |
+| `GET /health` | Database check only; it never runs the model |
+
+```bash
+curl -s localhost:8000/analyze -H 'content-type: application/json' \
+  -d '{"meal_text": "2 yumurta ve 1 muz"}'
+```
+
+All endpoints are plain `def`: the work inside is blocking (llama.cpp on the
+CPU, sync PostgreSQL), so FastAPI runs it in a thread pool and the event loop
+stays free. Measured: while one `/analyze` took 4.2 s, a `/health` request sent
+0.1 s later answered in 103 ms. The model is loaded once at startup; matching
+uses the in-memory index by default (`FOOD_INDEX_BACKEND=postgres` switches to
+the ingested table, with identical results). Configuration lives in `.env`
+(see `.env.example`).
+
 ## Item statuses and honest totals
 
 | Status | Meaning | Counted in totals |
@@ -127,7 +155,9 @@ pip install "astra-nutrition[judge] @ git+https://github.com/turhanGoksu/astra-n
 ```python
 Analyzer.with_judge("groq", api_key="...", model="...", rpm=30)
 Analyzer.with_judge("gemini", api_key="...", model="...", rpm=10)
-Analyzer.with_judge("openai-compatible", base_url="http://localhost:11434/v1", model="llama3")
+Analyzer.with_judge(
+    "openai-compatible", base_url="http://localhost:11434/v1", model="llama3"
+)
 Analyzer.with_judge(my_provider)  # any object with complete_json(system, user) -> str
 ```
 
@@ -233,7 +263,7 @@ redistributing the data in an open-source package.
 
 ```text
 src/astra_nutrition/   the library (what pip installs)
-app/                   the web service on top of the library (in progress)
+app/                   the FastAPI service on top of the library
 scripts/               table building from USDA, model download, ingest
 eval/                  evaluation harness and results
 data/                  food selection (source of the table) and eval data
@@ -246,6 +276,5 @@ pip install -r requirements-dev.txt     # pinned dependencies + the package (edi
 pytest                                   # unit tests, no database or model needed
 ```
 
-The PostgreSQL + pgvector backend (`pip install "astra-nutrition[postgres]"`),
-a FastAPI service with request logging, Docker images and CI are being built
-step by step; this README will be updated as they land.
+Request logging to PostgreSQL, Docker images and CI are being built step by
+step; this README will be updated as they land.

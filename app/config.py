@@ -37,10 +37,12 @@ class Settings(BaseSettings):
     embedding_model_name: str = "intfloat/multilingual-e5-small"
     embedding_prefix: str = "query: "
 
-    # PROVISIONAL placeholders: replaced by values tuned on the dev set (Step 7).
-    match_strategy: str = "hybrid"
-    match_fuzzy_threshold: float = 0.5
-    match_embedding_threshold: float = 0.9
+    # Matching thresholds are not configured here: the service uses the values
+    # chosen on the dev set, kept in astra_nutrition.analyzer.DEFAULT_MATCH_CONFIG.
+    # Where the matcher looks foods up: in memory (bundled table, same results)
+    # or in PostgreSQL (the ingested table).
+    food_index_backend: Literal["memory", "postgres"] = "memory"
+    parser_threads: int | None = None  # llama.cpp CPU threads (None: its default)
 
     # Step 8: optional LLM judge, off by default. As in Project 4, model names
     # and free-tier rate limits live in .env: a deprecated model is fixed by

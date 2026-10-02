@@ -48,6 +48,7 @@ judge = [
 # PostgreSQL + pgvector backend instead of the in-memory default.
 postgres = [
     "psycopg[binary]>=3.3,<4",
+    "psycopg-pool>=3.3,<4",
     "pgvector>=0.5,<0.6",
 ]
 

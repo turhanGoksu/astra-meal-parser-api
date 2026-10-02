@@ -26,6 +26,7 @@ from astra_nutrition.embeddings import Embedder
 from astra_nutrition.foods import FoodTable
 from astra_nutrition.index.memory import MemoryFoodIndex
 from astra_nutrition.matcher import (
+    Candidate,
     FoodIndex,
     FoodMatcher,
     Judge,
@@ -202,6 +203,10 @@ class Analyzer:
                 path = self._model_path or default_model_path()
                 self._parser = MealParser.from_path(path, n_threads=self._n_threads)
             return self._parser
+
+    def candidates(self, name: str, k: int = 5) -> list[Candidate]:
+        """Top-k candidates from every matching stage, for inspection."""
+        return self._matcher.candidates(name, k)
 
     def analyze(self, meal_text: str) -> AnalysisResult:
         """Parse a meal description and compute its nutrition."""
