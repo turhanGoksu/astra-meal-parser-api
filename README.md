@@ -83,7 +83,8 @@ uvicorn app.main:app
 |---|---|
 | `POST /analyze` `{"meal_text": "..."}` | The library's `AnalysisResult` as JSON (max 1000 characters) |
 | `GET /foods/search?q=...&k=5` | Candidates from every matching stage with scores, for inspection |
-| `GET /health` | Database check only; it never runs the model |
+| `GET /stats/unmatched?limit=20` | The most frequent unmatched names and their closest food |
+| `GET /health` | Database check only (it never runs the model), plus a count of failed log writes |
 
 ```bash
 curl -s localhost:8000/analyze -H 'content-type: application/json' \
@@ -97,6 +98,26 @@ stays free. Measured: while one `/analyze` took 4.2 s, a `/health` request sent
 uses the in-memory index by default (`FOOD_INDEX_BACKEND=postgres` switches to
 the ingested table, with identical results). Configuration lives in `.env`
 (see `.env.example`).
+
+### Request log and coverage gaps
+
+Every analysis is stored in PostgreSQL as one `analyses` row plus one
+`analysis_items` row per item, in a single transaction. Unmatched items keep
+their closest candidate, so the foods to add next come from counting, not
+guessing:
+
+```text
+GET /stats/unmatched
+[{"name": "mercimek çorbası", "times": 3, "closest_food": "lentils"},
+ {"name": "ayran", "times": 2, "closest_food": "sunflower_seeds"}, ...]
+```
+
+Logging is best effort: the user always gets the result. The row is written
+after the response is sent, with a 2 s connection timeout; a failed write is a
+warning in the service log and increments `log_failures` in `/health`.
+Measured with the database stopped: `/analyze` still answered 200 in ~0.9 s,
+`/health` returned 503, and after the restart it reported `log_failures: 1`.
+Set `LOG_MEAL_TEXT=false` to store results without the user's text.
 
 ## Item statuses and honest totals
 
@@ -276,5 +297,5 @@ pip install -r requirements-dev.txt     # pinned dependencies + the package (edi
 pytest                                   # unit tests, no database or model needed
 ```
 
-Request logging to PostgreSQL, Docker images and CI are being built step by
-step; this README will be updated as they land.
+Docker images and CI are being built step by step; this README will be
+updated as they land.

@@ -44,6 +44,9 @@ class Settings(BaseSettings):
     food_index_backend: Literal["memory", "postgres"] = "memory"
     parser_threads: int | None = None  # llama.cpp CPU threads (None: its default)
 
+    # Request log (Step 11). The meal text is user data: it can be left out.
+    log_meal_text: bool = True
+
     # Step 8: optional LLM judge, off by default. As in Project 4, model names
     # and free-tier rate limits live in .env: a deprecated model is fixed by
     # editing .env, not code.
