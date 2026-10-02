@@ -63,6 +63,9 @@ def build_analyzer(settings: Settings, pool=None) -> Analyzer:
         use_grammar=settings.parser_use_grammar,
         resplit_merged=settings.parser_resplit_merged,
     )
+    # Warm-up: llama.cpp's first generation is slow (~4 s vs ~1 s); pay it at
+    # startup instead of on the first user's request.
+    parser.parse("1 muz")
     judge = judge_from_settings(settings)
     embedder = None
     if judge is not None:  # only the judge needs embeddings (and torch)

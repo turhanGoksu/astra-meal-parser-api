@@ -15,8 +15,14 @@ from app.config import get_settings
 
 
 def download_model() -> Path:
-    """Download the configured GGUF file (skipped if already up to date)."""
+    """Download the configured GGUF file unless it is already there.
+
+    An existing file is used as is, without a network call, so containers
+    restart offline once the model is in the volume.
+    """
     settings = get_settings()
+    if settings.model_path.exists():
+        return settings.model_path
     settings.model_dir.mkdir(parents=True, exist_ok=True)
     path = hf_hub_download(
         repo_id=settings.model_repo_id,

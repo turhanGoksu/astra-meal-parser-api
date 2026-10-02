@@ -1,0 +1,14 @@
+# Optional LLM judge, pinned (the image gets these only with
+# --build-arg WITH_JUDGE=true). About 850 MB installed, mostly torch.
+
+# CPU-only PyTorch wheels. sentence-transformers needs torch, and the default
+# Linux wheel on PyPI pulls several GB of CUDA libraries we never use.
+# On Linux, pip prefers "2.14.0+cpu" from this index over PyPI's "2.14.0".
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# Candidate retrieval (intfloat/multilingual-e5-small, chosen on the dev set)
+sentence-transformers==6.1.0
+torch==2.14.0
+
+# Judge providers (Groq / Gemini / OpenAI-compatible) over HTTP
+httpx==0.28.1

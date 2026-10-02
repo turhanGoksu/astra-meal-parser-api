@@ -1,5 +1,11 @@
-# Optional: only for eval/langchain_compare.py (Step 9). Never installed into
-# the Docker image; the service keeps its own retrieval code.
--r requirements.txt
+# Optional: only for eval/langchain_compare.py (Step 9). Install in a separate
+# virtualenv: langchain-postgres 0.0.18 requires pgvector<0.4, which conflicts
+# with the service's pgvector 0.5 pin in requirements.txt (so that file is not
+# included here; pip resolves a compatible pgvector for langchain-postgres).
+-r requirements-judge.txt
+-e .
 
+pydantic-settings==2.15.0
+psycopg[binary]==3.3.6
+psycopg-pool==3.3.3
 langchain-postgres==0.0.18

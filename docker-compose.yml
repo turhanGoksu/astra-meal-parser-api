@@ -15,5 +15,27 @@ services:
       timeout: 3s
       retries: 10
 
+  api:
+    build:
+      context: .
+      args:
+        WITH_JUDGE: ${WITH_JUDGE:-false}  # true: image with the LLM judge
+    image: astra-nutrition-api:${API_TAG:-latest}
+    env_file: .env
+    environment:
+      POSTGRES_HOST: db     # the db service on the compose network
+      MODEL_DIR: /models    # volume: the model is never in the image
+      HF_HOME: /hf-cache    # volume: embedding model cache (judge only)
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - models:/models
+      - hf-cache:/hf-cache
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   pgdata:
+  models:
+  hf-cache:

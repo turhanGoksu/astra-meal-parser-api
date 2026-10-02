@@ -27,6 +27,7 @@ eval/
 .github/
 pgdata/
 *.md
+!README.md
 .DS_Store
 .vscode/
 .idea/

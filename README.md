@@ -97,7 +97,8 @@ stays free. Measured: while one `/analyze` took 4.2 s, a `/health` request sent
 0.1 s later answered in 103 ms. The model is loaded once at startup; matching
 uses the in-memory index by default (`FOOD_INDEX_BACKEND=postgres` switches to
 the ingested table, with identical results). Configuration lives in `.env`
-(see `.env.example`).
+(see `.env.example`). The judge is optional here too: install
+`requirements-judge.txt` and set `LLM_JUDGE_PROVIDER`.
 
 ### Request log and coverage gaps
 
@@ -118,6 +119,31 @@ warning in the service log and increments `log_failures` in `/health`.
 Measured with the database stopped: `/analyze` still answered 200 in ~0.9 s,
 `/health` returned 503, and after the restart it reported `log_failures: 1`.
 Set `LOG_MEAL_TEXT=false` to store results without the user's text.
+
+### Docker
+
+`docker-compose.yml` runs PostgreSQL (with pgvector) and the API. Create
+`.env` from `.env.example` first, then:
+
+```bash
+docker compose up -d              # http://127.0.0.1:8000
+docker compose logs -f api        # first start: model download, then "startup complete"
+```
+
+- **The model is not in the image.** On first start the container downloads
+  the GGUF (~1 GB) into the `models` volume; later starts find it there and
+  need no network. Measured: the first start took 213 s (mostly the
+  download); a restart with the model already in the volume answered in 29 s.
+- **Slim by default.** The image has the parser, matcher and request log
+  (523 MB). The optional LLM judge needs PyTorch and sentence-transformers,
+  which make the image ~4× larger (2.0 GB, CPU-only PyTorch); build it in with
+  `WITH_JUDGE=true docker compose build api`.
+- **Ready means ready.** The service parses one meal at startup, so the first
+  real request does not pay the model's warm-up. The container's healthcheck
+  calls `/health` and allows a 10-minute start period for the first download.
+- Multi-stage build (compilers stay in the build stage), runs as a non-root
+  user, ports bound to `127.0.0.1` only. Measured memory of the running API
+  container: 1.1 GiB (`docker stats`).
 
 ## Item statuses and honest totals
 
@@ -297,5 +323,4 @@ pip install -r requirements-dev.txt     # pinned dependencies + the package (edi
 pytest                                   # unit tests, no database or model needed
 ```
 
-Docker images and CI are being built step by step; this README will be
-updated as they land.
+CI is being built next; this README will be updated as it lands.

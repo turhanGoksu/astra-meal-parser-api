@@ -1,10 +1,6 @@
-# Runtime dependencies (installed into the Docker image).
+# Service runtime dependencies: the default (slim) Docker image.
 # Direct dependencies are pinned exactly; transitive ones are resolved by pip.
-
-# CPU-only PyTorch wheels. sentence-transformers needs torch, and the default
-# Linux wheel on PyPI pulls several GB of CUDA libraries we never use.
-# On Linux, pip prefers "2.14.0+cpu" from this index over PyPI's "2.14.0".
---extra-index-url https://download.pytorch.org/whl/cpu
+# The optional LLM judge's dependencies are in requirements-judge.txt.
 
 # Web service
 fastapi==0.141.1
@@ -15,15 +11,9 @@ pydantic-settings==2.15.0
 # Parser inference: GGUF model via llama.cpp (compiles C++ on install)
 llama-cpp-python==0.3.35
 huggingface-hub==1.33.0
+numpy==2.5.3
 
-# Embeddings (intfloat/multilingual-e5-small, chosen on the dev set)
-sentence-transformers==6.1.0
-torch==2.14.0
-
-# PostgreSQL + pgvector
+# PostgreSQL + pgvector (request log; optional postgres food index)
 psycopg[binary]==3.3.6
 psycopg-pool==3.3.3
 pgvector==0.5.0
-
-# LLM tie-breaker (optional, off by default): Groq / Gemini over HTTP
-httpx==0.28.1
