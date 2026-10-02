@@ -1,0 +1,251 @@
+# astra-nutrition
+
+Turkish / English meal text → foods, grams and nutrition, **offline by default**.
+
+```text
+$ astra-nutrition "kahvaltıda 2 yumurta, biraz beyaz peynir, 1 kase mercimek çorbası ve bir muz"
+Yumurta            2        ok          Egg            100 g    143 kcal
+Beyaz Peynir       biraz    estimated*  Feta cheese     30 g   79.5 kcal
+Mercimek Çorbası   1 kase   unmatched   -                  -          -
+Muz                bir      ok          Banana         118 g    105 kcal
+
+Total: 327.5 kcal | protein 18.1 g | carbs 28.8 g | fat 16.3 g
+* 1 item(s) use a default portion (estimate).
+Not counted: 1 unmatched, 0 with an unreadable amount.
+```
+
+> **Status: alpha (`0.1.0.dev0`).** The API may still change. Nutrition values are
+> estimates from a public reference table; this is not medical or dietary advice.
+
+## What it does
+
+1. **Parses** a free-text meal into `{name, amount}` items with a fine-tuned 1.5B
+   model ([Turhan123/astra-meal-parser-gguf](https://huggingface.co/Turhan123/astra-meal-parser-gguf),
+   Q4_K_M GGUF, ~1 GB) running on CPU with llama.cpp. No API key, no network
+   after the first download.
+2. **Normalizes amounts** with deterministic rules: `100g`, `2 adet`, `1 kase`,
+   `yarım`, `iki buçuk dilim`, `200 ml`, `two slices`, `half a cup`, …
+3. **Matches foods** against a bundled, traceable table built from USDA FoodData
+   Central: exact match, then fuzzy match (pg_trgm-style trigrams), optionally an
+   LLM judge.
+4. **Never guesses silently.** Every item gets a status, and the totals say
+   whether they are complete and whether they include estimates.
+
+## Quickstart
+
+```bash
+pip install "git+https://github.com/turhanGoksu/astra-nutrition.git"
+```
+
+Python 3.12+. `llama-cpp-python` is compiled during install, so a C++ compiler
+and CMake are needed (Xcode command line tools on macOS, `build-essential` on
+Linux). The GGUF model is downloaded to the Hugging Face cache on first use.
+
+```python
+from astra_nutrition import Analyzer
+
+analyzer = Analyzer()  # create once and reuse: loading the model takes ~2 s
+result = analyzer.analyze("2 yumurta, biraz pilav ve 1 dilim baklava")
+
+for item in result.items:
+    print(item.name, item.status, item.grams, item.nutrition)
+print(result.totals.kcal, result.totals.complete, result.totals.includes_estimates)
+```
+
+Already have parsed items (from your own parser)? Skip the model entirely:
+
+```python
+result = analyzer.analyze_items([("Yumurta", "2 adet"), ("Pilav", "1 tabak")])
+```
+
+### Command line
+
+```bash
+astra-nutrition "2 yumurta ve 1 muz"              # readable table
+astra-nutrition "2 yumurta ve 1 muz" --json       # the full AnalysisResult
+astra-nutrition "..." --foods my_foods.csv        # add your own foods
+astra-nutrition "..." --model ./model.gguf        # use a local GGUF file
+```
+
+Exit codes: `0` analyzed, `1` the parser could not read the meal, `2` bad input
+(for example a food file with problems).
+
+## Item statuses and honest totals
+
+| Status | Meaning | Counted in totals |
+|---|---|---|
+| `ok` | Food found; grams measured or converted from a household unit | yes |
+| `estimated` | Food found; the amount was missing or vague (`biraz`, `some`), so the food's default portion is used | yes, and `totals.includes_estimates` is true |
+| `amount_unknown` | Food found, but the amount could not be read (`bir tutam`) | no (a guess could be 100× off) |
+| `unmatched` | The food is not in the table | no |
+
+`totals.complete` is false when any item is not counted. An unmatched item is
+always reported; it is never replaced by the "nearest" food, because a wrong
+food is silent wrong data while an unmatched item is visible. The closest
+candidate is kept in `best_candidate_food_id` for debugging only.
+
+Every matched item also has `food_source` ("USDA SR Legacy, fdc_id …" or the
+source you gave for your own foods), `match_method` (`exact`, `fuzzy`, `llm`)
+and `amount_detail` (how the grams were obtained).
+
+## Add your own foods
+
+One CSV row per food; values per 100 g; `source` says where the numbers come from.
+
+```csv
+id,name_en,name_tr,aliases,kcal_100g,protein_100g,carbs_100g,fat_100g,default_grams,source,grams_per_bowl
+my_lentil_soup,Lentil soup,Mercimek çorbası,mercimek çorbası|lentil soup,…,…,…,…,250,my recipe card,250
+```
+
+- Required: `id` (a-z, 0-9, _), `name_en`, `name_tr`, the four per-100 g values,
+  `default_grams`, `source`.
+- Optional: `aliases` (`|`-separated), `density_g_per_ml`, `note`, and
+  `grams_per_<unit>` for `piece`, `slice`, `bowl`, `plate`, `glass`, `cup`,
+  `tbsp`, `tsp`, `handful`.
+- Merging is **strict**: an unknown column, an id or a name that already belongs
+  to another food is an error with a clear message. To replace a bundled food
+  on purpose, say so: `--replace banana` or `replace_ids=["banana"]`.
+
+```python
+from astra_nutrition import Analyzer, FoodTable
+
+table = FoodTable.bundled().with_user_foods("my_foods.csv")
+analyzer = Analyzer(table=table)
+```
+
+## Optional LLM judge
+
+Exact and fuzzy matching are precise but miss synonyms and some typos. The
+optional judge retrieves the 5 closest foods with embeddings
+(`intfloat/multilingual-e5-small`) and asks an LLM whether one of them is the
+**same food**, or none.
+
+```bash
+pip install "astra-nutrition[judge] @ git+https://github.com/turhanGoksu/astra-nutrition.git"
+```
+
+```python
+Analyzer.with_judge("groq", api_key="...", model="...", rpm=30)
+Analyzer.with_judge("gemini", api_key="...", model="...", rpm=10)
+Analyzer.with_judge("openai-compatible", base_url="http://localhost:11434/v1", model="llama3")
+Analyzer.with_judge(my_provider)  # any object with complete_json(system, user) -> str
+```
+
+- **Off by default**, even if an API key is in your environment.
+- Only **item names** are sent, never the meal text. A local OpenAI-compatible
+  server (Ollama, LM Studio, vLLM) keeps everything on your machine.
+- The judge may only answer with one of the offered candidate ids or `none`;
+  anything else, or any provider error, leaves the item `unmatched`.
+- CLI: `--judge groq|gemini|openai-compatible`, configured with `GROQ_*`,
+  `GEMINI_*` or `JUDGE_BASE_URL` / `JUDGE_MODEL` / `JUDGE_API_KEY` / `JUDGE_RPM`.
+
+## Evaluation
+
+The matching strategies were compared on 193 labeled item names produced by
+the real parser from 101 meals: 49 everyday meals ("natural") and 52 meals
+written to stress the matcher ("variants": synonyms, regional words, typos and
+20 *hard negatives* such as `kuru üzüm` vs `üzüm` or `sütlaç` vs `süt`).
+
+- **Grouped dev/test split** (118 / 75 names): all names of the same food stay
+  on one side, so fixes learned on dev cannot leak into test.
+- Thresholds were chosen on **dev only**, mechanically, by
+  `net = correct − 3 × wrong` (a wrong food costs three correct ones).
+  Labels were frozen before any score was computed.
+- The **test set was evaluated once**, after every design was fixed.
+
+**Test results** (75 names, 47 of them have a correct food in the table):
+
+| Design | Settings (chosen on dev) | Correct / 47 | Wrong matches | Net (λ = 3) |
+|---|---|---|---|---|
+| A: exact | – | 18 | 0 | 18 |
+| B: embeddings only (e5-small) | similarity ≥ 0.96 | 20 | 1 | 17 |
+| C: exact → fuzzy (default) | trigram similarity ≥ 0.60 | 22 | 2 | 16 |
+| C + judge, Groq `openai/gpt-oss-20b` | same | **36** | 2 | **30** |
+| C + judge, Gemini `gemini-3.5-flash-lite` | same | **37** | 3 | 28 |
+
+How to read this honestly:
+
+- The judge roughly **doubles recall** (47% → 77–79%); this was the largest and
+  most consistent effect on both dev and test.
+- With 75 test names one item is ~1.3 points: differences of 1–3 items
+  (Groq vs Gemini, A vs C) are within noise.
+- Test is harder than dev (exact-match recall 65% on dev, 38% on test).
+- Embedding similarity alone could not separate hard negatives from correct
+  matches: `Kuru Üzüm → Üzüm` scored higher (0.942) than `Yohurt → Yoğurt`
+  (0.922). Embeddings measure "related", not "same food", so they are used to
+  retrieve candidates for the judge, not to decide.
+- The two test errors of Design C come from fuzzy matching on substrings
+  (`Etli Kuru Fasulye → kuru fasulye`, `canned tuna in oil → canned tuna`).
+  They were found on test, so they were not tuned away (see Roadmap).
+- 75% of the in-table "natural" names are exact alias copies (the same person
+  wrote aliases and meals), against 30% in the "variants" set.
+
+Reproduce (needs the PostgreSQL setup below): `python -m eval.run_eval sweep`
+and `python -m eval.run_eval report`; judge answers are cached in
+`eval/results/` so results reproduce without API keys.
+
+## Data and licenses
+
+| Part | Source | License |
+|---|---|---|
+| Food table (128 foods, 455 names) | USDA FoodData Central, SR Legacy (2018-04), curated | public domain (CC0) |
+| Parser model | [Turhan123/astra-meal-parser-gguf](https://huggingface.co/Turhan123/astra-meal-parser-gguf) (Qwen2.5-1.5B, Q4_K_M) | Apache-2.0 |
+| Embeddings (judge only) | `intfloat/multilingual-e5-small` | MIT |
+| Code | this repository | Apache-2.0 |
+
+Every gram value in `food_portions.csv` is either a USDA household measure
+(the source text is stored) or an explicit, labeled assumption (for example a
+Turkish tea glass of 100 ml). Some Turkish dishes are mapped to their base
+ingredient and documented as approximations: `pilav` → plain cooked rice,
+`kuru fasulye` → boiled white beans (added oil is not counted). Generic words
+have documented defaults: `peynir` → white cheese (feta), `cheese` → cheddar.
+
+TürKomp (the Turkish national food composition database) is **not** used: its
+terms restrict copying and commercial use, which is incompatible with
+redistributing the data in an open-source package.
+
+## Limitations
+
+- **Coverage.** Many Turkish dishes are not in the table yet (mercimek çorbası,
+  menemen, lahmacun, mantı, köfte, ayran …); they are reported as `unmatched`.
+- **Parser errors.** The model sometimes merges items, puts amount words into
+  names (`Yarım Ekmek`), or invents weights in parentheses (`1 dilim (30g)`).
+  Merged names with a conjunction are re-parsed; invented weights are used only
+  if the user wrote them. Merges without a conjunction (`Tahin Pekmez`) remain.
+- **Fuzzy matching on substrings** can match a modified dish to its base food
+  (`Etli Kuru Fasulye`).
+- **Small evaluation set** (193 names): treat the numbers as indicative.
+- **Resources.** ~1 s per meal on an Apple M3 CPU; peak memory ~2 GB on ARM
+  (llama.cpp repacks the weights). With the judge, setup takes ~10 s and each
+  unresolved item adds a network round trip.
+
+## Roadmap
+
+- **v0.2:** more Turkish coverage from USDA FNDDS (public domain: baklava,
+  stuffed grape leaves, shish kebab, "fat added" variants) and recipe-based
+  dishes computed from USDA ingredients; a larger evaluation set.
+- Send fuzzy matches that add words to the alias (`Etli Kuru Fasulye`) to the
+  judge; measure on a new dataset.
+- A check that parsed names actually appear in the meal text (the model can
+  invent foods for non-meal input).
+
+## Repository layout and development
+
+```text
+src/astra_nutrition/   the library (what pip installs)
+app/                   the web service on top of the library (in progress)
+scripts/               table building from USDA, model download, ingest
+eval/                  evaluation harness and results
+data/                  food selection (source of the table) and eval data
+tests/                 unit tests; `pytest -m integration` needs PostgreSQL
+```
+
+```bash
+python3.12 -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt     # pinned dependencies + the package (editable)
+pytest                                   # unit tests, no database or model needed
+```
+
+The PostgreSQL + pgvector backend (`pip install "astra-nutrition[postgres]"`),
+a FastAPI service with request logging, Docker images and CI are being built
+step by step; this README will be updated as they land.
