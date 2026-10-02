@@ -258,7 +258,7 @@ class Analyzer:
             ), None
 
         food = self.table.get(match.food_id)
-        amount = parse_amount(item.amount)
+        amount = parse_amount(item.amount, item_name=item.name)
         if meal_text is not None:
             amount = ground_note_weight(amount, meal_text)
         grams = to_grams(amount, self.table.portions(food.id))

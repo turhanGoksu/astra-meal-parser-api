@@ -36,6 +36,14 @@ def test_statuses_grams_and_totals() -> None:
     assert totals.complete is False
 
 
+def test_amount_that_repeats_the_item_name_gives_the_same_grams() -> None:
+    result = ANALYZER.analyze_items([("Muz", "1"), ("Muz", "1 muz")])
+    assert [(i.status, i.grams) for i in result.items] == [
+        (ItemStatus.OK, 118.0),
+        (ItemStatus.OK, 118.0),
+    ]
+
+
 def test_unmatched_item_keeps_its_best_candidate_but_no_nutrition() -> None:
     item = ANALYZER.analyze_items([("Baklava", "1 dilim")]).items[0]
     assert item.nutrition is None

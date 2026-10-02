@@ -83,6 +83,33 @@ def test_parenthetical_weight_is_kept_as_note_but_not_used() -> None:
     assert (parsed.value, parsed.unit) == (1, Unit.SLICE)
 
 
+@pytest.mark.parametrize(
+    ("text", "item_name", "kind", "value", "unit"),
+    [
+        # The model repeats the item's name (seen in the Docker build, Step 12)
+        ("1 muz", "Muz", Q, 1, None),
+        ("2 rafadan", "Rafadan", Q, 2, None),
+        ("15 hazelnuts", "Hazelnuts", Q, 15, None),
+        ("1 elma (150g)", "Elma", Q, 1, None),
+        ("1 dilim kaşar peyniri", "Kaşar Peyniri", Q, 1, Unit.SLICE),
+        # Only the exact name, only at the end, and only after an amount
+        ("1 elma", "Muz", AmountKind.UNPARSEABLE, None, None),
+        ("muz 1", "Muz", AmountKind.UNPARSEABLE, None, None),
+        ("muz", "Muz", AmountKind.UNPARSEABLE, None, None),
+        ("bir parça dil peyniri", "Dil Peyniri", AmountKind.UNPARSEABLE, None, None),
+    ],
+)
+def test_parse_amount_drops_the_item_name(
+    text: str, item_name: str, kind: AmountKind, value: float | None, unit: Unit | None
+) -> None:
+    parsed = parse_amount(text, item_name=item_name)
+    assert (parsed.kind, parsed.value, parsed.unit) == (kind, value, unit)
+
+
+def test_item_name_is_kept_without_the_item_name_argument() -> None:
+    assert parse_amount("1 muz").kind == AmountKind.UNPARSEABLE
+
+
 EGG = FoodPortions(default_grams=100, unit_grams={Unit.PIECE: 50})
 RICE = FoodPortions(default_grams=150, unit_grams={Unit.PLATE: 200})
 AYRAN = FoodPortions(default_grams=200, density_g_per_ml=1.03)

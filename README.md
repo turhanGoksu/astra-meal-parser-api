@@ -289,6 +289,13 @@ redistributing the data in an open-source package.
   names (`Yarım Ekmek`), or invents weights in parentheses (`1 dilim (30g)`).
   Merged names with a conjunction are re-parsed; invented weights are used only
   if the user wrote them. Merges without a conjunction (`Tahin Pekmez`) remain.
+- **Parser output depends on the llama.cpp build.** With the same weights and
+  temperature 0, 22 of 101 eval meals parse differently in the Docker image
+  than on macOS: tiny floating-point differences flip near-tied tokens, and
+  the rest of the output follows. Neither build is better overall. The
+  deterministic layers absorb part of it (an amount that repeats the item's
+  name, `1 muz`, reads as `1`); the matching evaluation uses fixed parsed
+  names, so its numbers do not depend on the build.
 - **Fuzzy matching on substrings** can match a modified dish to its base food
   (`Etli Kuru Fasulye`).
 - **Small evaluation set** (193 names): treat the numbers as indicative.

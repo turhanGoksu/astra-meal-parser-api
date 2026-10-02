@@ -14,6 +14,11 @@ Policy for unclear amounts (no silent guesses):
 Weights the model adds in parentheses ("1 dilim (30g)") are the model's own
 estimates unless the user wrote them. ``ground_note_weight`` uses them only
 when the same number and unit appear in the user's meal text.
+
+The model sometimes repeats the item's name in the amount ("1 muz" for Muz);
+whether it does can change with the llama.cpp build, even at temperature 0.
+Given the item name, ``parse_amount`` drops that exact trailing name, so the
+result does not depend on the machine the model ran on.
 """
 
 import re
@@ -165,8 +170,13 @@ class GramsResult:
     detail: str
 
 
-def parse_amount(text: str) -> ParsedAmount:
-    """Parse a free-text amount (Turkish or English) into a ParsedAmount."""
+def parse_amount(text: str, item_name: str | None = None) -> ParsedAmount:
+    """Parse a free-text amount (Turkish or English) into a ParsedAmount.
+
+    With ``item_name``, the item's own name at the end of the amount is
+    dropped ("1 muz" for Muz reads as "1"). Only the exact name is dropped;
+    other unknown words still make the amount unparseable.
+    """
     notes = tuple(n.strip() for n in _PARENTHESES.findall(text) if n.strip())
     body = _PARENTHESES.sub(" ", text)
     for symbol, replacement in _UNICODE_FRACTIONS.items():
@@ -176,6 +186,8 @@ def parse_amount(text: str) -> ParsedAmount:
         body = re.sub(rf"\b{phrase}\b", alias, body)
 
     tokens = _TOKEN.findall(body)
+    if item_name is not None:
+        tokens = _drop_item_name(tokens, item_name)
     if not tokens:
         return ParsedAmount(AmountKind.MISSING, notes=notes)
 
@@ -304,6 +316,18 @@ def to_grams(amount: ParsedAmount, portions: FoodPortions) -> GramsResult:
     return GramsResult(
         AmountStatus.UNCONVERTIBLE, None, f"no gram data for unit '{unit}'"
     )
+
+
+def _drop_item_name(tokens: list[str], item_name: str) -> list[str]:
+    """Drop the item's name from the end of the tokens if something precedes it.
+
+    An amount that is only the name ("muz") is left as is: there is no amount
+    in it to read, and dropping it would turn it into a quiet default portion.
+    """
+    name = _TOKEN.findall(fold(item_name))
+    if name and len(tokens) > len(name) and tokens[-len(name) :] == name:
+        return tokens[: -len(name)]
+    return tokens
 
 
 def _to_number(token: str) -> float | None:
