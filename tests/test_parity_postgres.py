@@ -1,11 +1,14 @@
 """Integration: the in-memory backend must agree with PostgreSQL exactly.
 
 Runs only with `pytest -m integration` and a loaded database
-(python -m scripts.ingest_foods). Compares every eval name.
+(python -m scripts.ingest_foods). Compares every eval name. In CI the database
+is loaded by tests/load_test_db.py, and a missing one fails instead of skipping.
 """
 
 import csv
+import os
 from pathlib import Path
+from typing import NoReturn
 
 import pytest
 
@@ -21,6 +24,13 @@ NAMES = [
 ]
 
 
+def _unavailable(reason: str) -> NoReturn:
+    """Skip locally; fail in CI, where a skipped test would be a silent green."""
+    if os.environ.get("CI") == "true":
+        pytest.fail(reason)
+    pytest.skip(reason)
+
+
 @pytest.fixture(scope="module")
 def backends():
     psycopg = pytest.importorskip("psycopg")
@@ -31,7 +41,7 @@ def backends():
     try:
         conn = connect(settings.database_url)
     except (RuntimeError, psycopg.OperationalError) as exc:
-        pytest.skip(f"database not available: {exc}")
+        _unavailable(f"database not available: {exc}")
 
     from astra_nutrition.index.postgres import PgFoodIndex
 
@@ -40,7 +50,7 @@ def backends():
         "SELECT value FROM ingest_metadata WHERE key = 'embedding_signature'"
     ).fetchone()
     if row is None:
-        pytest.skip("database is empty: run python -m scripts.ingest_foods")
+        _unavailable("database is empty: run python -m scripts.ingest_foods")
     pg = PgFoodIndex(conn, row[0])
     yield pg, MemoryFoodIndex.from_bundled()
     conn.close()

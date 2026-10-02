@@ -1,5 +1,7 @@
 # astra-nutrition
 
+[![CI](https://github.com/turhanGoksu/astra-nutrition/actions/workflows/ci.yml/badge.svg)](https://github.com/turhanGoksu/astra-nutrition/actions/workflows/ci.yml)
+
 Turkish / English meal text → foods, grams and nutrition, **offline by default**.
 
 ```text
@@ -330,4 +332,17 @@ pip install -r requirements-dev.txt     # pinned dependencies + the package (edi
 pytest                                   # unit tests, no database or model needed
 ```
 
-CI is being built next; this README will be updated as it lands.
+CI (GitHub Actions, `.github/workflows/ci.yml`) runs on every push to `main`
+and every pull request, each job on a fresh runner:
+
+| Job | Checks |
+|---|---|
+| `lint` | `ruff check`, `ruff format --check` |
+| `test` | unit tests with the pinned dev dependencies |
+| `integration` | loads a throwaway PostgreSQL + pgvector service and runs the pg_trgm parity tests; in CI a missing database fails instead of skipping |
+| `build` | builds the wheel, installs it in a clean virtualenv with the library's own version ranges, and analyzes a meal from the bundled data |
+
+No job downloads the parser or the embedding model. Model output can differ
+between machines (see Limitations), so tests use fakes and check only this
+project's code; a test that compared real model output would fail at random
+on a different runner.

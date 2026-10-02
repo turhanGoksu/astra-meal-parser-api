@@ -1,0 +1,113 @@
+# Every push to main and every pull request: lint, unit tests, PostgreSQL
+# integration tests and a package build, each on a fresh runner. No job
+# downloads the parser or the embedding model: model output depends on the
+# machine, so tests use fakes and check only our own code.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Compile llama.cpp for a generic x86-64 CPU: runners differ, and the wheel
+  # built on one runner is cached and reused on the others.
+  CMAKE_ARGS: -DGGML_NATIVE=OFF
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install ruff (version pinned in requirements-dev.txt)
+        run: pip install "$(grep '^ruff==' requirements-dev.txt)"
+      - run: ruff check .
+      - run: ruff format --check .
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip  # keeps the compiled llama-cpp-python wheel (minutes)
+          cache-dependency-path: |
+            requirements*.txt
+            pyproject.toml
+      - run: pip install -r requirements-dev.txt
+      - name: Unit tests (no model, no database)
+        run: pytest
+
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: pgvector/pgvector:0.8.6-pg17
+        env:
+          POSTGRES_USER: astra
+          POSTGRES_PASSWORD: ci-only  # throwaway database inside this job
+          POSTGRES_DB: astra_meals
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U astra -d astra_meals"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      POSTGRES_PASSWORD: ci-only  # user, db, host and port are the defaults
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements*.txt
+            pyproject.toml
+      - run: pip install -r requirements-dev.txt
+      - name: Load the food table (fake vectors; only exact/fuzzy are compared)
+        run: python -m tests.load_test_db
+      - name: pg_trgm parity (fails, never skips, in CI)
+        run: pytest -m integration
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements*.txt
+            pyproject.toml
+      - name: Install build (version pinned in requirements-dev.txt)
+        run: pip install "$(grep '^build==' requirements-dev.txt)"
+      - run: python -m build
+      # A clean virtualenv outside the repository, with the library's own
+      # version ranges (not the service pins): what `pip install` users get.
+      - name: Install the wheel and analyze a meal without a model
+        working-directory: ${{ runner.temp }}
+        run: |
+          python -m venv wheel-env
+          wheel-env/bin/pip install "$GITHUB_WORKSPACE"/dist/*.whl
+          wheel-env/bin/astra-nutrition --version
+          wheel-env/bin/python -c '
+          from astra_nutrition import Analyzer
+          item = Analyzer().analyze_items([("Muz", "1 muz")]).items[0]
+          assert (item.food_id, item.grams) == ("banana", 118.0), item
+          print("bundled data OK:", item.food_id, item.grams)
+          '
