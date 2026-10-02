@@ -51,3 +51,12 @@ def test_bad_food_file_exits_with_2_and_explains(
     bad.write_text("id,name\nx,y\n", encoding="utf-8")
     assert cli.main(["1 muz", "--foods", str(bad)]) == 2
     assert "missing column 'name_en'" in capsys.readouterr().err
+
+
+def test_judge_without_settings_exits_with_2_and_names_them(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    for name in ("JUDGE_BASE_URL", "JUDGE_MODEL", "JUDGE_API_KEY", "JUDGE_RPM"):
+        monkeypatch.delenv(name, raising=False)
+    assert cli.main(["1 muz", "--judge", "openai-compatible"]) == 2
+    assert "JUDGE_MODEL, JUDGE_BASE_URL" in capsys.readouterr().err

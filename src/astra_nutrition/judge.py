@@ -23,7 +23,8 @@ from astra_nutrition.matcher import FoodDetails, JudgeVerdict
 
 logger = logging.getLogger(__name__)
 
-GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_BASE_URL = "https://api.groq.com/openai/v1"
+GROQ_CHAT_URL = f"{GROQ_BASE_URL}/chat/completions"
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 RETRYABLE_STATUS = {429, 500, 502, 503, 504}
 
@@ -58,32 +59,56 @@ class LlmProvider(Protocol):
     def complete_json(self, system: str, user: str) -> str: ...
 
 
-class GroqProvider:
-    """Groq's OpenAI-compatible chat completions endpoint."""
+class OpenAICompatibleProvider:
+    """Any OpenAI-compatible chat completions endpoint.
+
+    Works with Groq, OpenAI, OpenRouter and local servers such as Ollama,
+    LM Studio or vLLM. A local judge sends nothing outside the machine and
+    has no quota. ``api_key`` may be None for local servers; ``json_mode``
+    can be turned off for servers without JSON mode (answers are validated
+    either way).
+    """
+
+    name = "openai-compatible"
+
+    def __init__(
+        self,
+        client: httpx.Client,
+        base_url: str,
+        api_key: str | None,
+        model: str,
+        json_mode: bool = True,
+    ) -> None:
+        self._client = client
+        self.url = base_url.rstrip("/") + "/chat/completions"
+        self._api_key = api_key
+        self.model = model
+        self._json_mode = json_mode
+
+    def complete_json(self, system: str, user: str) -> str:
+        body: dict[str, object] = {
+            "model": self.model,
+            "temperature": 0,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+        }
+        if self._json_mode:
+            body["response_format"] = {"type": "json_object"}
+        headers = {"Authorization": f"Bearer {self._api_key}"} if self._api_key else {}
+        response = self._client.post(self.url, headers=headers, json=body)
+        response.raise_for_status()
+        return response.json()["choices"][0]["message"]["content"]
+
+
+class GroqProvider(OpenAICompatibleProvider):
+    """Groq: a preset of the OpenAI-compatible provider."""
 
     name = "groq"
 
     def __init__(self, client: httpx.Client, api_key: str, model: str) -> None:
-        self._client = client
-        self._api_key = api_key
-        self.model = model
-
-    def complete_json(self, system: str, user: str) -> str:
-        response = self._client.post(
-            GROQ_CHAT_URL,
-            headers={"Authorization": f"Bearer {self._api_key}"},
-            json={
-                "model": self.model,
-                "temperature": 0,
-                "response_format": {"type": "json_object"},
-                "messages": [
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user},
-                ],
-            },
-        )
-        response.raise_for_status()
-        return response.json()["choices"][0]["message"]["content"]
+        super().__init__(client, GROQ_BASE_URL, api_key, model)
 
 
 class GeminiProvider:
@@ -212,42 +237,69 @@ def _retry_after(response: httpx.Response) -> float | None:
         return None
 
 
-PROVIDERS: dict[str, type[GroqProvider] | type[GeminiProvider]] = {
-    "groq": GroqProvider,
-    "gemini": GeminiProvider,
-}
+PROVIDER_NAMES = ("groq", "gemini", "openai-compatible")
 
 
 def build_judge(
     provider: str,
-    api_key: str,
+    api_key: str | None,
     model: str,
-    rpm: int,
+    rpm: int | None = None,
+    *,
+    base_url: str | None = None,
+    json_mode: bool = True,
     timeout_seconds: float = 30.0,
     client: httpx.Client | None = None,
 ) -> FoodJudge:
-    """A judge for "groq" or "gemini", rate-limited to ``rpm`` requests/minute.
+    """A judge for a named provider, rate-limited to ``rpm`` requests/minute.
 
     Model names and free-tier limits change over time, so the caller passes
-    them in (the service reads them from .env).
+    them in (the service reads them from .env). ``rpm=None`` means no limit,
+    e.g. for a local server.
     """
-    return FoodJudge(
-        build_provider(provider, api_key, model, timeout_seconds, client),
-        RateLimiter(rpm),
+    llm = build_provider(
+        provider,
+        api_key,
+        model,
+        base_url=base_url,
+        json_mode=json_mode,
+        timeout_seconds=timeout_seconds,
+        client=client,
     )
+    return FoodJudge(llm, RateLimiter(rpm) if rpm else None)
 
 
 def build_provider(
     provider: str,
-    api_key: str,
+    api_key: str | None,
     model: str,
+    *,
+    base_url: str | None = None,
+    json_mode: bool = True,
     timeout_seconds: float = 30.0,
     client: httpx.Client | None = None,
 ) -> LlmProvider:
-    """A raw provider (no rate limiting or retries)."""
-    if provider not in PROVIDERS:
+    """A raw provider (no rate limiting or retries).
+
+    "groq" and "gemini" need an API key; "openai-compatible" needs a
+    base_url (for example http://localhost:11434/v1 for Ollama). For anything
+    else, implement LlmProvider (one method) and pass it to FoodJudge.
+    """
+    if provider not in PROVIDER_NAMES:
         raise ValueError(
-            f"unknown provider {provider!r}; use one of {sorted(PROVIDERS)}"
+            f"unknown provider {provider!r}; use one of {list(PROVIDER_NAMES)} "
+            "or pass your own LlmProvider"
         )
+    if provider in ("groq", "gemini") and not api_key:
+        raise ValueError(f"{provider} needs an api_key")
+    if provider == "openai-compatible" and not base_url:
+        raise ValueError("openai-compatible needs a base_url")
     client = client or httpx.Client(timeout=timeout_seconds)
-    return PROVIDERS[provider](client, api_key, model)
+    if provider == "groq":
+        assert api_key is not None
+        return GroqProvider(client, api_key, model)
+    if provider == "gemini":
+        assert api_key is not None
+        return GeminiProvider(client, api_key, model)
+    assert base_url is not None
+    return OpenAICompatibleProvider(client, base_url, api_key, model, json_mode)

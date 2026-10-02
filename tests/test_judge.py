@@ -11,9 +11,11 @@ from astra_nutrition.judge import (
     FoodJudge,
     GeminiProvider,
     GroqProvider,
+    OpenAICompatibleProvider,
     RateLimiter,
     build_judge,
     build_prompt,
+    build_provider,
     parse_verdict,
 )
 from astra_nutrition.matcher import FoodDetails
@@ -162,3 +164,44 @@ def test_build_judge_for_a_known_provider() -> None:
 def test_build_judge_rejects_unknown_providers() -> None:
     with pytest.raises(ValueError, match="unknown provider"):
         build_judge("openai", "k", "m", rpm=10)
+
+
+def test_openai_compatible_provider_works_with_a_local_server() -> None:
+    seen = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["url"] = str(request.url)
+        seen["auth"] = request.headers.get("authorization")
+        seen["body"] = json.loads(request.content)
+        return httpx.Response(
+            200, json={"choices": [{"message": {"content": '{"food_id": "none"}'}}]}
+        )
+
+    provider = OpenAICompatibleProvider(
+        _client(handler), "http://localhost:11434/v1/", None, "llama3", json_mode=False
+    )
+    assert provider.complete_json("s", "u") == '{"food_id": "none"}'
+    assert seen["url"] == "http://localhost:11434/v1/chat/completions"
+    assert seen["auth"] is None  # no key for a local server
+    assert "response_format" not in seen["body"]
+
+
+def test_groq_is_a_preset_of_the_openai_compatible_provider() -> None:
+    provider = build_provider("groq", "k", "m")
+    assert isinstance(provider, OpenAICompatibleProvider)
+    assert provider.url == GROQ_CHAT_URL
+
+
+@pytest.mark.parametrize(
+    ("provider", "api_key", "kwargs", "problem"),
+    [
+        ("groq", None, {}, "groq needs an api_key"),
+        ("gemini", "", {}, "gemini needs an api_key"),
+        ("openai-compatible", None, {}, "needs a base_url"),
+    ],
+)
+def test_build_provider_names_what_is_missing(
+    provider: str, api_key: str | None, kwargs: dict, problem: str
+) -> None:
+    with pytest.raises(ValueError, match=problem):
+        build_provider(provider, api_key, "m", **kwargs)

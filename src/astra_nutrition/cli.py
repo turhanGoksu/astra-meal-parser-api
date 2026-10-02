@@ -1,10 +1,16 @@
 """Command line: astra-nutrition "2 yumurta ve 1 muz" [--json] [--foods FILE].
 
 Exit codes: 0 analyzed, 1 the parser could not read the meal, 2 bad input
-(for example a user food file with problems).
+(for example a user food file with problems or missing judge settings).
+
+The LLM judge is off unless --judge is given. Its settings come from the
+environment: GROQ_API_KEY / GROQ_MODEL / GROQ_RPM, GEMINI_API_KEY / ...,
+or JUDGE_BASE_URL / JUDGE_MODEL / JUDGE_API_KEY / JUDGE_RPM for any
+OpenAI-compatible server (for example a local Ollama).
 """
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -43,8 +49,33 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="local GGUF file (default: downloaded from Hugging Face on first use)",
     )
+    parser.add_argument(
+        "--judge",
+        choices=["groq", "gemini", "openai-compatible"],
+        help="send unresolved item names to an LLM judge (needs the [judge] extra)",
+    )
     parser.add_argument("--version", action="version", version=__version__)
     return parser
+
+
+def judge_settings(provider: str) -> dict[str, object]:
+    """Judge settings from environment variables; raises ValueError if missing."""
+    prefix = "JUDGE" if provider == "openai-compatible" else provider.upper()
+    env = {name: os.environ.get(f"{prefix}_{name}") for name in ("API_KEY", "MODEL")}
+    required = ["MODEL"] + (["API_KEY"] if prefix != "JUDGE" else [])
+    if prefix == "JUDGE":
+        env["BASE_URL"] = os.environ.get("JUDGE_BASE_URL")
+        required.append("BASE_URL")
+    missing = [f"{prefix}_{name}" for name in required if not env.get(name)]
+    if missing:
+        raise ValueError(f"--judge {provider} needs {', '.join(missing)}")
+    rpm = os.environ.get(f"{prefix}_RPM")
+    return {
+        "model": env["MODEL"],
+        "api_key": env["API_KEY"],
+        "base_url": env.get("BASE_URL"),
+        "rpm": int(rpm) if rpm else None,
+    }
 
 
 def render(result: AnalysisResult) -> str:
@@ -83,7 +114,22 @@ def main(argv: list[str] | None = None) -> int:
         print(exc, file=sys.stderr)
         return 2
 
-    analyzer = Analyzer(table=table, model_path=args.model)
+    if args.judge:
+        try:
+            settings = judge_settings(args.judge)
+            analyzer = Analyzer.with_judge(
+                args.judge, table=table, model_path=args.model, **settings
+            )
+        except (ValueError, ImportError) as exc:
+            print(exc, file=sys.stderr)
+            return 2
+        print(
+            f"LLM judge on: unresolved item names are sent to {args.judge} "
+            f"({settings['model']}).",
+            file=sys.stderr,
+        )
+    else:
+        analyzer = Analyzer(table=table, model_path=args.model)
     result = analyzer.analyze(args.meal)
     print(result.model_dump_json(indent=2) if args.json else render(result))
     if result.parse_status in (ParseStatus.INVALID_OUTPUT, ParseStatus.ERROR):

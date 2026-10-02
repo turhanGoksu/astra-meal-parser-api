@@ -28,7 +28,11 @@ def judge_from_settings(settings: Settings) -> FoodJudge | None:
         return None
     key, model, rpm = _judge_settings(settings, settings.llm_judge_provider)
     return build_judge(
-        settings.llm_judge_provider, key, model, rpm, settings.llm_timeout_seconds
+        settings.llm_judge_provider,
+        key,
+        model,
+        rpm,
+        timeout_seconds=settings.llm_timeout_seconds,
     )
 
 
@@ -37,4 +41,7 @@ def provider_from_settings(
 ) -> tuple[LlmProvider, int]:
     """A raw provider and its rpm limit (the evaluation adds its own cache)."""
     key, model, rpm = _judge_settings(settings, provider)
-    return build_provider(provider, key, model, settings.llm_timeout_seconds), rpm
+    provider_obj = build_provider(
+        provider, key, model, timeout_seconds=settings.llm_timeout_seconds
+    )
+    return provider_obj, rpm

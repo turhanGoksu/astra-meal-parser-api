@@ -12,6 +12,7 @@ import threading
 from collections.abc import Iterable
 from enum import StrEnum
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, Field
 
@@ -35,11 +36,18 @@ from astra_nutrition.matcher import (
 from astra_nutrition.model import default_model_path
 from astra_nutrition.parser import MealParser, ParsedItem, ParseStatus, RejectedItem
 
+if TYPE_CHECKING:  # httpx is only installed with the [judge] extra
+    from astra_nutrition.judge import LlmProvider
+
 # Chosen on the dev set (lambda = 3): exact -> fuzzy (pg_trgm >= 0.60), with
 # the embedding-threshold stage off. See the evaluation in the README.
 DEFAULT_MATCH_CONFIG = MatchConfig(
     Strategy.HYBRID, fuzzy_threshold=0.60, embedding_threshold=None
 )
+# Candidate retrieval for the judge, chosen on the dev set (recall@5 16/16).
+# e5 models expect the "query: " prefix on every text.
+DEFAULT_EMBEDDING_MODEL = "intfloat/multilingual-e5-small"
+DEFAULT_EMBEDDING_PREFIX = "query: "
 
 
 class ItemStatus(StrEnum):
@@ -130,6 +138,61 @@ class Analyzer:
         self._model_path = Path(model_path) if model_path else None
         self._n_threads = n_threads
         self._parser_lock = threading.Lock()
+
+    @classmethod
+    def with_judge(
+        cls,
+        provider: "str | LlmProvider",
+        *,
+        model: str | None = None,
+        api_key: str | None = None,
+        rpm: int | None = None,
+        base_url: str | None = None,
+        json_mode: bool = True,
+        embedder: Embedder | None = None,
+        table: FoodTable | None = None,
+        model_path: str | Path | None = None,
+        n_threads: int | None = None,
+    ) -> "Analyzer":
+        """An Analyzer whose unresolved items go to an LLM judge.
+
+        Needs: pip install 'astra-nutrition[judge]'. Off unless asked for:
+        item names (never the meal text) are sent to ``provider``, which can
+        be "groq", "gemini", "openai-compatible" (any OpenAI-compatible URL,
+        including a local Ollama server that keeps everything on the
+        machine), or your own LlmProvider object.
+        """
+        try:
+            from astra_nutrition.judge import FoodJudge, RateLimiter, build_provider
+
+            if embedder is None:
+                from astra_nutrition.embeddings import SentenceTransformerEmbedder
+
+                embedder = SentenceTransformerEmbedder(
+                    DEFAULT_EMBEDDING_MODEL, prefix=DEFAULT_EMBEDDING_PREFIX
+                )
+        except ImportError as exc:
+            raise ImportError(
+                "The LLM judge needs extra packages: "
+                "pip install 'astra-nutrition[judge]'"
+            ) from exc
+
+        if isinstance(provider, str):
+            if not model:
+                raise ValueError("model is required when provider is a name")
+            llm = build_provider(
+                provider, api_key, model, base_url=base_url, json_mode=json_mode
+            )
+        else:
+            llm = provider
+        judge = FoodJudge(llm, RateLimiter(rpm) if rpm else None)
+        return cls(
+            table=table,
+            embedder=embedder,
+            judge=judge,
+            model_path=model_path,
+            n_threads=n_threads,
+        )
 
     @property
     def parser(self) -> MealParser:

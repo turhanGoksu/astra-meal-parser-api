@@ -1,5 +1,7 @@
 """Tests for the public Analyzer API (bundled table, fake parser, no model)."""
 
+import json
+
 import pytest
 
 import astra_nutrition.analyzer as analyzer_module
@@ -105,3 +107,50 @@ def test_parser_is_loaded_lazily(monkeypatch: pytest.MonkeyPatch) -> None:
     analyzer.analyze_items([("Muz", "1")])  # no parser needed either
     with pytest.raises(AssertionError, match="model requested"):
         _ = analyzer.parser
+
+
+class KeywordEmbedder:
+    """Tiny deterministic embedder: 'yo...' texts point one way, others another."""
+
+    model_name = "keyword"
+    signature = "keyword"
+    dimension = 2
+
+    def embed(self, texts):
+        import numpy as np
+
+        return np.array(
+            [[1.0, 0.0] if "yo" in t.lower() else [0.0, 1.0] for t in texts],
+            dtype=np.float32,
+        )
+
+
+class FirstCandidateProvider:
+    """An LlmProvider of our own: always picks the first candidate."""
+
+    name = "mine"
+    model = "rule"
+
+    def complete_json(self, system: str, user: str) -> str:
+        first = user.split("- id: ")[1].split(" ")[0]
+        return json.dumps({"food_id": first})
+
+
+def test_with_judge_accepts_a_custom_provider_and_embedder() -> None:
+    analyzer = Analyzer.with_judge(FirstCandidateProvider(), embedder=KeywordEmbedder())
+    item = analyzer.analyze_items([("Yohurt", "1 kase")]).items[0]
+    assert item.match_method == "llm"
+    assert item.food_id is not None and "yogurt" in item.food_id
+
+
+def test_with_judge_needs_a_model_name_for_named_providers() -> None:
+    with pytest.raises(ValueError, match="model is required"):
+        Analyzer.with_judge("groq", api_key="k", embedder=KeywordEmbedder())
+
+
+def test_with_judge_explains_the_missing_extra(monkeypatch: pytest.MonkeyPatch) -> None:
+    import sys
+
+    monkeypatch.setitem(sys.modules, "sentence_transformers", None)
+    with pytest.raises(ImportError, match=r"astra-nutrition\[judge\]"):
+        Analyzer.with_judge("groq", api_key="k", model="m")
