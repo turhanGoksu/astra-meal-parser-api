@@ -3,6 +3,8 @@
 Defense in depth:
 - optionally, a grammar (built from ``MealParseSchema``) guarantees the SHAPE;
 - Pydantic validation checks the MEANING we can check here (e.g. blank names);
+- grounding: every word of an item name must appear in the meal text, so an
+  invented food is rejected instead of counted;
 - every call ends in an explicit ``ParseStatus``, never a silent guess.
 
 Grammar-constrained decoding is OFF by default (provisional decision, small
@@ -100,6 +102,48 @@ def looks_merged(name: str) -> bool:
     return bool(tokens & _MERGE_WORDS) or any(s in name for s in _MERGE_SYMBOLS)
 
 
+_WORD = re.compile(r"[a-z0-9]+")
+
+
+def ungrounded_words(name: str, meal_text: str) -> list[str]:
+    """Words of a parsed name that do not appear in the meal text.
+
+    Both are folded (Turkish letters, case), and whole words are compared.
+    """
+    meal_words = set(_WORD.findall(fold(meal_text)))
+    return [word for word in _WORD.findall(fold(name)) if word not in meal_words]
+
+
+def check_grounding(result: ParseResult, meal_text: str) -> ParseResult:
+    """Move items whose name is not in the meal text to ``rejected_items``.
+
+    Strict on purpose: a similarity rule would let an invented "Elma" through
+    on "elmas". The cost, measured on the 220 eval items: 5 are rejected, 2 of
+    them correct typo fixes by the model ("letuce" -> "lettuce"). They are
+    rejected loudly, never counted silently.
+    """
+    kept: list[ParsedItem] = []
+    for item in result.items:
+        missing = ungrounded_words(item.name, meal_text)
+        if missing:
+            result.rejected_items.append(
+                RejectedItem(
+                    raw=item.model_dump(),
+                    reason=f"not in the meal text: {', '.join(missing)}",
+                )
+            )
+        else:
+            kept.append(item)
+    if len(kept) < len(result.items):
+        if kept:
+            result.status = ParseStatus.PARTIAL
+        else:
+            result.status = ParseStatus.INVALID_OUTPUT
+            result.error = "no item name appears in the meal text"
+    result.items = kept
+    return result
+
+
 class ChatModel(Protocol):
     """The subset of ``llama_cpp.Llama`` we use (lets tests inject a fake)."""
 
@@ -156,9 +200,11 @@ class MealParser:
         use_grammar: bool = False,
         max_tokens: int = 512,
         resplit_merged: bool = True,
+        check_grounding: bool = True,
     ) -> None:
         self._llm = llm
         self._resplit_merged = resplit_merged
+        self._check_grounding = check_grounding
         # llama.cpp keeps one KV cache per model instance: never run two
         # generations on it at the same time.
         self._lock = threading.Lock()
@@ -177,6 +223,7 @@ class MealParser:
         n_threads: int | None = None,
         use_grammar: bool = False,
         resplit_merged: bool = True,
+        check_grounding: bool = True,
     ) -> "MealParser":
         """Load the GGUF model from disk (slow: call once at startup)."""
         # Imported here so `import astra_nutrition` stays fast and light.
@@ -190,7 +237,12 @@ class MealParser:
             chat_format="chatml",
             verbose=False,
         )
-        return cls(llm, use_grammar=use_grammar, resplit_merged=resplit_merged)
+        return cls(
+            llm,
+            use_grammar=use_grammar,
+            resplit_merged=resplit_merged,
+            check_grounding=check_grounding,
+        )
 
     def parse(self, meal_text: str) -> ParseResult:
         """Parse one meal description. Never raises: failures become a status.
@@ -200,6 +252,9 @@ class MealParser:
         single item and are kept. After a split, the first item keeps the
         original amount; the others get an empty amount, which amount
         normalization flags as an assumed portion instead of guessing.
+
+        Finally, items whose name is not in ``meal_text`` are rejected (see
+        ``check_grounding``), including names from a second parse.
         """
         start = time.perf_counter()
         result = self._parse_once(meal_text)
@@ -214,6 +269,8 @@ class MealParser:
                 else:
                     items.append(item)
             result.items = items
+        if self._check_grounding and result.items:
+            result = check_grounding(result, meal_text)
         result.latency_ms = _elapsed_ms(start)
         return result
 

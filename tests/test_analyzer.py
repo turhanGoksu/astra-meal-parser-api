@@ -104,6 +104,19 @@ def test_analyze_uses_the_parser_and_reports_its_status() -> None:
     assert len(result.rejected_items) == 1  # the blank name, reported
     assert result.items[0].food_id == "banana"
     assert result.items[0].grams == 118.0  # 1 medium banana
+    assert (result.totals.rejected, result.totals.complete) == (1, False)
+
+
+def test_rejected_food_makes_the_total_incomplete() -> None:
+    fake = FakeLlm(
+        '{"items": [{"name": "Muz", "amount": "1"},'
+        ' {"name": "Ekmek", "amount": "1 dilim"}]}'
+    )
+    result = Analyzer(parser=MealParser(fake)).analyze("1 muz")
+    assert [i.name for i in result.items] == ["Muz"]  # every item counted...
+    assert result.totals.kcal == 105.0
+    assert result.totals.rejected == 1  # ...but the invented bread is reported
+    assert result.totals.complete is False
 
 
 def test_parser_is_loaded_lazily(monkeypatch: pytest.MonkeyPatch) -> None:

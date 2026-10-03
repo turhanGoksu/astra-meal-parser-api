@@ -8,6 +8,7 @@ from astra_nutrition.parser import (
     MealParser,
     ParseStatus,
     looks_merged,
+    ungrounded_words,
     validate_output,
 )
 from astra_nutrition.prompts import SYSTEM_PROMPT
@@ -184,6 +185,60 @@ def test_no_merge_word_means_no_second_call() -> None:
 
 def test_resplit_can_be_disabled() -> None:
     fake = FakeLlm([MERGED, SPLIT])
-    result = MealParser(fake, resplit_merged=False).parse("yoğurt with honey")
+    parser = MealParser(fake, resplit_merged=False)
+    result = parser.parse("yoğurt with honey and walnuts")
     assert len(fake.calls) == 1
     assert len(result.items) == 1
+
+
+@pytest.mark.parametrize(
+    ("name", "meal_text", "missing"),
+    [
+        ("Kaşar Peyniri", "1 dilim KAŞAR PEYNİRİ", []),  # Turkish case folding
+        ("70% dark chocolate", "three squares of 70% dark chocolate", []),
+        ("Hava", "bugün hava çok güzel", []),  # grounded; matching finds no food
+        ("Elma", "elmas yüzük aldım", ["elma"]),  # whole words only
+        ("Yumurta", "kahvaltı yaptım", ["yumurta"]),  # an invented food
+        ("lettuce", "tuna salad with letuce", ["lettuce"]),  # the known cost
+    ],
+)
+def test_ungrounded_words(name: str, meal_text: str, missing: list[str]) -> None:
+    assert ungrounded_words(name, meal_text) == missing
+
+
+TWO_ITEMS = (
+    '{"items": [{"name": "Yumurta", "amount": "2"},'
+    ' {"name": "Ekmek", "amount": "1 dilim"}]}'
+)
+
+
+def test_item_not_in_the_meal_text_is_rejected_loudly() -> None:
+    result = MealParser(FakeLlm(TWO_ITEMS)).parse("kahvaltıda 2 yumurta yedim")
+    assert result.status == ParseStatus.PARTIAL
+    assert [i.name for i in result.items] == ["Yumurta"]
+    assert result.rejected_items[0].raw == {"name": "Ekmek", "amount": "1 dilim"}
+    assert result.rejected_items[0].reason == "not in the meal text: ekmek"
+
+
+def test_only_invented_items_make_the_parse_invalid() -> None:
+    output = '{"items": [{"name": "Yumurta", "amount": "1 porsiyon"}]}'
+    result = MealParser(FakeLlm(output)).parse("kahvaltı yaptım")
+    assert result.status == ParseStatus.INVALID_OUTPUT
+    assert result.items == []
+    assert result.error == "no item name appears in the meal text"
+
+
+def test_names_from_a_second_parse_are_checked_too() -> None:
+    invented = (
+        '{"items": [{"name": "Yoğurt", "amount": "1"},'
+        ' {"name": "Banana", "amount": "1"}]}'
+    )
+    result = MealParser(FakeLlm([MERGED, invented])).parse("yoğurt with honey")
+    assert [i.name for i in result.items] == ["Yoğurt"]
+    assert [r.raw["name"] for r in result.rejected_items] == ["Banana"]
+
+
+def test_grounding_can_be_disabled() -> None:
+    result = MealParser(FakeLlm(TWO_ITEMS), check_grounding=False).parse("2 yumurta")
+    assert result.status == ParseStatus.SUCCESS
+    assert [i.name for i in result.items] == ["Yumurta", "Ekmek"]

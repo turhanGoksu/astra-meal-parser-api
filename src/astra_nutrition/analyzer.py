@@ -101,7 +101,8 @@ class Totals(BaseModel):
     amount_unknown: int
     unmatched: int
     includes_estimates: bool  # some counted grams are default portions
-    complete: bool  # every item is counted
+    complete: bool  # every item is counted and the parser rejected none
+    rejected: int = 0  # items the parser checks refused (see rejected_items)
 
 
 class AnalysisResult(BaseModel):
@@ -215,6 +216,10 @@ class Analyzer:
         result.parse_status = parsed.status
         result.parse_error = parsed.error
         result.rejected_items = parsed.rejected_items
+        if parsed.rejected_items:
+            # A rejected item may be a real food: the total leaves it out.
+            result.totals.rejected = len(parsed.rejected_items)
+            result.totals.complete = False
         return result
 
     def analyze_items(

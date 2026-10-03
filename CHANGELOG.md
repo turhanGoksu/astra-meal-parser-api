@@ -14,9 +14,16 @@ A released version is never changed: fixes ship as a new version.
 - Browser demo with Gradio (`demo/`), run locally with one Docker command
   and also ready as a Hugging Face Docker Space. It installs the hash-checked
   v0.1.0 wheel and runs offline, without the LLM judge.
+- Grounding check in the parser: every word of an item name must appear in
+  the meal text, so an invented food is rejected with a reason instead of
+  counted. On by default (`MealParser(..., check_grounding=False)` turns it
+  off). The CLI lists rejected items.
+- `totals.rejected`: the number of items the parser checks refused.
 
 ### Changed
 
+- `totals.complete` is now false when the parser rejected an item, since a
+  rejected item may be a real food that the total leaves out.
 - CI runs on a pinned `ubuntu-24.04` instead of the moving `ubuntu-latest`.
 
 ## [0.1.0] - 2026-10-02

@@ -181,6 +181,13 @@ always reported; it is never replaced by the "nearest" food, because a wrong
 food is silent wrong data while an unmatched item is visible. The closest
 candidate is kept in `best_candidate_food_id` for debugging only.
 
+Before matching, every item name is checked against the meal text: each word
+of the name must appear in it (Turkish letters and case folded, whole words).
+A name that fails, such as a food the model invented, goes to `rejected_items`
+with the reason, is not counted, and makes `totals.complete` false
+(`totals.rejected` counts them). `MealParser(..., check_grounding=False)`
+turns the check off.
+
 Every matched item also has `food_source` ("USDA SR Legacy, fdc_id …" or the
 source you gave for your own foods), `match_method` (`exact`, `fuzzy`, `llm`)
 and `amount_detail` (how the grams were obtained).
@@ -311,6 +318,11 @@ redistributing the data in an open-source package.
   names (`Yarım Ekmek`), or invents weights in parentheses (`1 dilim (30g)`).
   Merged names with a conjunction are re-parsed; invented weights are used only
   if the user wrote them. Merges without a conjunction (`Tahin Pekmez`) remain.
+- **Strict name check.** When the model fixes a typo (`letuce` → `lettuce`),
+  the name is no longer in the text, so the item is rejected. On the 101 eval
+  meals, 5 of 220 items were rejected; 2 of them (`lettuce`, `tomatoes`) would
+  have matched. A similarity rule would keep them, but would also let an
+  invented `Elma` through on `elmas`.
 - **Parser output depends on the llama.cpp build.** With the same weights and
   temperature 0, 22 of 101 eval meals parse differently in the Docker image
   than on macOS: tiny floating-point differences flip near-tied tokens, and
@@ -332,8 +344,6 @@ redistributing the data in an open-source package.
   dishes computed from USDA ingredients; a larger evaluation set.
 - Send fuzzy matches that add words to the alias (`Etli Kuru Fasulye`) to the
   judge; measure on a new dataset.
-- A check that parsed names actually appear in the meal text (the model can
-  invent foods for non-meal input).
 
 ## Repository layout and development
 

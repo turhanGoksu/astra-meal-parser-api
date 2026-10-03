@@ -35,10 +35,19 @@ def test_text_output_shows_items_totals_and_what_was_not_counted(
     assert "Not counted: 1 unmatched" in out
 
 
+def test_text_output_names_rejected_items(
+    fake_model: None, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert cli.main(["2 yumurta"]) == 0  # Baklava is not in the text
+    out = capsys.readouterr().out
+    assert "1 rejected by the parser checks" in out
+    assert "Rejected: 'Baklava' (not in the meal text: baklava)" in out
+
+
 def test_json_output_is_the_analysis_result(
     fake_model: None, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    assert cli.main(["2 yumurta", "--json"]) == 0
+    assert cli.main(["2 yumurta ve 1 dilim baklava", "--json"]) == 0
     data = json.loads(capsys.readouterr().out)
     assert data["totals"]["kcal"] == 143.0
     assert data["items"][1]["status"] == "unmatched"

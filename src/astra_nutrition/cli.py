@@ -97,10 +97,14 @@ def render(result: AnalysisResult) -> str:
     if t.includes_estimates:
         lines.append(f"* {t.estimated} item(s) use a default portion (estimate).")
     if not t.complete:
+        rejected = f", {t.rejected} rejected by the parser checks" if t.rejected else ""
         lines.append(
             f"Not counted: {t.unmatched} unmatched, "
-            f"{t.amount_unknown} with an unreadable amount."
+            f"{t.amount_unknown} with an unreadable amount{rejected}."
         )
+    for item in result.rejected_items:
+        name = item.raw.get("name") if isinstance(item.raw, dict) else None
+        lines.append(f"Rejected: {name or item.raw!r} ({item.reason})")
     return "\n".join(lines)
 
 
