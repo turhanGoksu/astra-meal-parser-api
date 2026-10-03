@@ -3,7 +3,7 @@ Haşlanmış Yumurta,egg_boiled,tr,
 Beyaz Peynir,feta,tr,
 Zeytin,black_olives|green_olives,tr,generic olive: both colors acceptable
 Çay,black_tea,tr,
-Mercimek Çorbası,none,tr,soup is a different dish from plain lentils
+Mercimek Çorbası,mercimek_corbasi,tr,"soup is a different dish from plain lentils; gold was none until the v0.2 recipe"
 Yarım Ekmek,white_bread,tr;noise,amount word leaked into the name
 Izgara Köfte,none,tr,
 Pilav,rice,tr,table maps pilav to cooked rice (documented approximation)
@@ -42,7 +42,7 @@ Peynir,feta,tr,table v2 maps generic Turkish 'peynir' to beyaz peynir (documente
 Ogle Yemegi,none,tr;ascii;noise,"parser turned ""öğle yemeği"" (lunch) into a food name"
 Tavuk Gogsu,chicken_breast,tr;ascii,
 Pirinc Pilavi,rice,tr;ascii,
-Mercimek Corbisi,none,tr;ascii;typo,
+Mercimek Corbisi,mercimek_corbasi,tr;ascii;typo,gold was none until the v0.2 recipe
 Salata,none,tr,generic salad
 Tam Bugday Ekmegi,whole_wheat_bread,tr;ascii,
 Fistik Ezmesi,peanut_butter,tr;ascii,

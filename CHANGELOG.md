@@ -23,15 +23,23 @@ A released version is never changed: fixes ship as a new version.
   are: baklava, zeytinyağlı and etli yaprak sarma, etli and zeytinyağlı biber
   dolması, falafel, tabule. FNDDS pieces are US sizes, so these dishes have
   only weight and volume measures: `1 dilim baklava` is `amount_unknown`,
-  `100 g baklava` is counted. The table has 135 foods; the 193 evaluation
-  names match exactly as before.
+  `100 g baklava` is counted. They change no evaluation decision.
 - `foods.csv` has a `source` column naming the dataset and FDC id.
+- Turkish recipe dishes computed from SR Legacy ingredients
+  (`data/recipes.csv`, `data/recipe_ingredients.csv`). Macros are divided by
+  the cooked weight, which each recipe states with its source; the build
+  refuses a cooked weight above the raw total. First recipe: mercimek çorbası
+  (84 kcal per 100 g).
 
 ### Changed
 
 - `totals.complete` is now false when the parser rejected an item, since a
   rejected item may be a real food that the total leaves out.
 - CI runs on a pinned `ubuntu-24.04` instead of the moving `ubuntu-latest`.
+- PostgreSQL `foods.fdc_id` may be NULL (recipe dishes); ingest upgrades a
+  database created by v0.1.0.
+- Evaluation: two dev names (`Mercimek Çorbası`, `Mercimek Corbisi`) now have
+  the recipe as their gold food instead of none; no test name changed.
 
 ## [0.1.0] - 2026-10-02
 

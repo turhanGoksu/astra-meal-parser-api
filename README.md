@@ -5,15 +5,14 @@
 Turkish / English meal text → foods, grams and nutrition, **offline by default**.
 
 ```text
-$ astra-nutrition "kahvaltıda 2 yumurta, biraz beyaz peynir, 1 kase mercimek çorbası ve bir muz"
-Yumurta            2        ok          Egg            100 g    143 kcal
-Beyaz Peynir       biraz    estimated*  Feta cheese     30 g   79.5 kcal
-Mercimek Çorbası   1 kase   unmatched   -                  -          -
-Muz                bir      ok          Banana         118 g    105 kcal
+$ astra-nutrition "öğlen 1 kase mercimek çorbası, biraz pilav ve 1 dilim baklava"
+Mercimek Çorbası   1 kase    ok          Turkish red lentil soup   250 g   209.8 kcal
+Pilav              biraz     estimated*  Cooked white rice         150 g     195 kcal
+Baklava            1 dilim   amount?     Baklava                       -          -
 
-Total: 327.5 kcal | protein 18.1 g | carbs 28.8 g | fat 16.3 g
+Total: 404.8 kcal | protein 14.4 g | carbs 71.6 g | fat 6.7 g
 * 1 item(s) use a default portion (estimate).
-Not counted: 1 unmatched, 0 with an unreadable amount.
+Not counted: 0 unmatched, 1 with an unreadable amount.
 ```
 
 > **Status: alpha (`0.1.0`, see [CHANGELOG](CHANGELOG.md)).** The API may still
@@ -294,20 +293,32 @@ and `python -m eval.run_eval report`; judge answers are cached in
 
 | Part | Source | License |
 |---|---|---|
-| Food table (135 foods, 475 names) | USDA FoodData Central: SR Legacy (2018-04) for single foods, FNDDS (2024-10-31) for 7 mixed dishes; curated | public domain (CC0) |
+| Food table (136 foods, 479 names) | USDA FoodData Central: SR Legacy (2018-04) for single foods and recipe ingredients, FNDDS (2024-10-31) for 7 mixed dishes; curated | public domain (CC0) |
 | Parser model | [Turhan123/astra-meal-parser-gguf](https://huggingface.co/Turhan123/astra-meal-parser-gguf) (Qwen2.5-1.5B, Q4_K_M) | Apache-2.0 |
 | Embeddings (judge only) | `intfloat/multilingual-e5-small` | MIT |
 | Code | this repository | Apache-2.0 |
 
 Every gram value in `food_portions.csv` is either a USDA household measure
 (the source text is stored) or an explicit, labeled assumption (for example a
-Turkish tea glass of 100 ml). FNDDS dishes (baklava, yaprak sarma, biber
-dolması, falafel, tabule) keep only weight and volume measures: FNDDS pieces
-are US sizes (one piece of baklava is 80 g), so `1 dilim baklava` reads as
-`amount_unknown` instead of a wrong number, while `100 g baklava` is counted. Some Turkish dishes are mapped to their base
+Turkish tea glass of 100 ml). Some Turkish dishes are mapped to their base
 ingredient and documented as approximations: `pilav` → plain cooked rice,
 `kuru fasulye` → boiled white beans (added oil is not counted). Generic words
 have documented defaults: `peynir` → white cheese (feta), `cheese` → cheddar.
+
+**FNDDS dishes** (baklava, yaprak sarma, biber dolması, falafel, tabule) keep
+only weight and volume measures: FNDDS pieces are US sizes (one piece of
+baklava is 80 g), so `1 dilim baklava` reads as `amount_unknown` instead of a
+wrong number, while `100 g baklava` is counted.
+
+**Turkish recipes.** Dishes without a USDA equivalent are computed from a
+home-style Turkish recipe (`data/recipes.csv`, `data/recipe_ingredients.csv`)
+with SR Legacy ingredients. The macros of the ingredients are divided by the
+**cooked** weight, because water evaporates while the macros stay in the pot;
+dividing by the raw total would understate every dish that loses water. Each
+recipe states its cooked weight and where that number comes from (so far an
+assumption), and the build refuses a cooked weight above the raw total.
+Mercimek çorbası comes out at 84 kcal per 100 g; FNDDS's US lentil soup, a
+different recipe, is 60.
 
 TürKomp (the Turkish national food composition database) is **not** used: its
 terms restrict copying and commercial use, which is incompatible with
@@ -315,8 +326,11 @@ redistributing the data in an open-source package.
 
 ## Limitations
 
-- **Coverage.** Many Turkish dishes are not in the table yet (mercimek çorbası,
-  menemen, lahmacun, mantı, köfte, ayran …); they are reported as `unmatched`.
+- **Coverage.** Many Turkish dishes are not in the table yet (menemen,
+  lahmacun, mantı, köfte, ayran …); they are reported as `unmatched`.
+- **Recipes are one home style.** A recipe dish stands for one documented
+  recipe; home versions vary (more butter, less water), and the cooked weight
+  is an assumption until measured.
 - **Parser errors.** The model sometimes merges items, puts amount words into
   names (`Yarım Ekmek`), or invents weights in parentheses (`1 dilim (30g)`).
   Merged names with a conjunction are re-parsed; invented weights are used only
@@ -342,10 +356,9 @@ redistributing the data in an open-source package.
 
 ## Roadmap
 
-- **v0.2:** Turkish dishes without a USDA equivalent (mercimek çorbası,
-  lahmacun, ayran, menemen …) computed from documented Turkish recipes with
-  USDA ingredients; a larger evaluation set. (Dishes FNDDS has as they are,
-  such as baklava, are already in the table.)
+- **v0.2:** more Turkish recipes (lahmacun, ayran, menemen, köfte …) and a
+  larger evaluation set. (FNDDS dishes and the first recipe, mercimek çorbası,
+  are already in the table.)
 - Send fuzzy matches that add words to the alias (`Etli Kuru Fasulye`) to the
   judge; measure on a new dataset.
 

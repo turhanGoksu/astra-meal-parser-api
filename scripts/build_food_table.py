@@ -71,6 +71,10 @@ FNDDS = Dataset(
 )
 DATASETS = (SR_LEGACY, FNDDS)
 
+# Turkish dishes without a USDA equivalent, computed from SR Legacy ingredients.
+RECIPES_PATH = Path("data/recipes.csv")
+RECIPE_INGREDIENTS_PATH = Path("data/recipe_ingredients.csv")
+
 # Written into the package so the table ships with it.
 PACKAGE_DATA = Path("src/astra_nutrition/data")
 FOODS_PATH = PACKAGE_DATA / "foods.csv"
@@ -159,6 +163,29 @@ def parse_spec(spec: str) -> list[tuple[str, str]]:
     return items
 
 
+def recipe_per_100g(
+    parts: list[tuple[float, dict[str, float]]], cooked_grams: float
+) -> dict[str, float]:
+    """Macros per 100 g of a cooked dish from (raw grams, macros per 100 g) parts.
+
+    The macros of the ingredients stay in the pot while water evaporates, so
+    they are divided by the cooked weight, not by the raw total (Design B).
+    """
+    raw_grams = sum(grams for grams, _ in parts)
+    if not 0 < cooked_grams <= raw_grams:
+        raise ValueError(
+            f"cooked weight {cooked_grams:g} g must be above 0 and at most "
+            f"the raw total {raw_grams:g} g"
+        )
+    return {
+        macro: round(
+            sum(grams * per_100g[macro] for grams, per_100g in parts) / cooked_grams,
+            2,
+        )
+        for macro in MACROS
+    }
+
+
 def resolve_grams(value: str, portions: Portions) -> tuple[str, float, str] | None:
     """(measure, grams, source) for "usda:<measure>" or a plain number."""
     if not value.startswith("usda:"):
@@ -176,14 +203,22 @@ def build() -> list[str]:
     foods: list[dict[str, object]] = []
     portion_rows: list[dict[str, object]] = []
     seen_names: dict[str, str] = {}
+    with open(RECIPES_PATH, encoding="utf-8") as f:
+        recipes = list(csv.DictReader(f))
+    with open(RECIPE_INGREDIENTS_PATH, encoding="utf-8") as f:
+        ingredients = list(csv.DictReader(f))
+    sr_legacy: tuple[dict[str, str], dict[str, dict[str, float]]] = ({}, {})
 
     for dataset in DATASETS:
         with open(dataset.selection, encoding="utf-8") as f:
             selection = list(csv.DictReader(f))
         ensure_usda(dataset)
-        descriptions, nutrients, usda_portions = load_usda(
-            dataset, {row["fdc_id"] for row in selection}
-        )
+        fdc_ids = {row["fdc_id"] for row in selection}
+        if dataset is SR_LEGACY:  # recipe ingredients are SR Legacy foods
+            fdc_ids |= {row["fdc_id"] for row in ingredients}
+        descriptions, nutrients, usda_portions = load_usda(dataset, fdc_ids)
+        if dataset is SR_LEGACY:
+            sr_legacy = (descriptions, nutrients)
 
         for row in selection:
             food_id, fdc_id = row["id"], row["fdc_id"]
@@ -198,11 +233,7 @@ def build() -> list[str]:
                 errors.append(f"{food_id}: missing macros {set(MACROS) - set(macros)}")
                 continue
 
-            aliases = [a.strip() for a in row["aliases"].split("|") if a.strip()]
-            for name in [row["name_en"], row["name_tr"], *aliases]:
-                owner = seen_names.setdefault(fold(name), food_id)
-                if owner != food_id:
-                    errors.append(f"{food_id}: name '{name}' already used by {owner}")
+            aliases = _claim_names(row, seen_names, errors)
 
             default = resolve_grams(row["default_grams"], usda_portions[fdc_id])
             if default is None:
@@ -256,10 +287,97 @@ def build() -> list[str]:
                 }
             )
 
+    for row in recipes:
+        food = _recipe_food(row, ingredients, sr_legacy, seen_names, errors)
+        if food is None:
+            continue
+        if any(other["id"] == food["id"] for other in foods):
+            errors.append(f"{food['id']}: id used twice")
+            continue
+        foods.append(food)
+        for key, value in parse_spec(row["portions"]):
+            if key not in SPEC_UNITS or value.startswith("usda:"):
+                errors.append(f"{food['id']}: recipe portions are plain grams per unit")
+                continue
+            portion_rows.append(
+                {
+                    "food_id": food["id"],
+                    "unit": key,
+                    "grams": float(value),
+                    "source": "assumption",
+                }
+            )
+
     if not errors:
         _write_csv(FOODS_PATH, foods)
         _write_csv(PORTIONS_PATH, portion_rows)
     return errors
+
+
+def _claim_names(
+    row: dict[str, str], seen_names: dict[str, str], errors: list[str]
+) -> list[str]:
+    """Register a food's names; report any folded name another food owns."""
+    aliases = [a.strip() for a in row["aliases"].split("|") if a.strip()]
+    for name in [row["name_en"], row["name_tr"], *aliases]:
+        owner = seen_names.setdefault(fold(name), row["id"])
+        if owner != row["id"]:
+            errors.append(f"{row['id']}: name '{name}' already used by {owner}")
+    return aliases
+
+
+def _recipe_food(
+    row: dict[str, str],
+    ingredients: list[dict[str, str]],
+    sr_legacy: tuple[dict[str, str], dict[str, dict[str, float]]],
+    seen_names: dict[str, str],
+    errors: list[str],
+) -> dict[str, object] | None:
+    """A foods.csv row for a recipe dish, or None (with errors) if invalid."""
+    descriptions, nutrients = sr_legacy
+    recipe_id = row["id"]
+    lines = [i for i in ingredients if i["recipe_id"] == recipe_id]
+    if not lines:
+        errors.append(f"{recipe_id}: recipe has no ingredients")
+        return None
+    parts: list[tuple[float, dict[str, float]]] = []
+    for line in lines:
+        macros = nutrients.get(line["fdc_id"], {})
+        if line["fdc_id"] not in descriptions or set(macros) != set(MACROS):
+            errors.append(f"{recipe_id}: ingredient fdc_id {line['fdc_id']} unusable")
+            return None
+        parts.append((float(line["grams"]), macros))
+    try:
+        per_100g = recipe_per_100g(parts, float(row["cooked_grams"]))
+    except ValueError as exc:
+        errors.append(f"{recipe_id}: {exc}")
+        return None
+
+    aliases = _claim_names(row, seen_names, errors)
+    raw_grams = sum(grams for grams, _ in parts)
+    return {
+        "id": recipe_id,
+        "fdc_id": "",
+        "usda_description": "Recipe: "
+        + "; ".join(
+            f"{line['grams']} g {descriptions[line['fdc_id']]}" for line in lines
+        ),
+        "name_en": row["name_en"],
+        "name_tr": row["name_tr"],
+        "aliases": "|".join(aliases),
+        "kcal_100g": per_100g["kcal"],
+        "protein_100g": per_100g["protein"],
+        "carbs_100g": per_100g["carbs"],
+        "fat_100g": per_100g["fat"],
+        "default_grams": float(row["default_grams"]),
+        "density_g_per_ml": None,
+        "note": row["note"],
+        "source": (
+            f"Recipe from USDA SR Legacy ingredients; cooked weight "
+            f"{float(row['cooked_grams']):g} g of {raw_grams:g} g raw "
+            f"({row['cooked_grams_source']})"
+        ),
+    }
 
 
 def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:

@@ -44,6 +44,10 @@ def test_typed_food_converts_numbers_and_empty_density() -> None:
     )
 
 
+def test_recipe_dish_has_no_fdc_id() -> None:
+    assert typed_food({**FOOD, "fdc_id": ""})["fdc_id"] is None
+
+
 def test_alias_rows_drop_names_with_identical_embedding_input() -> None:
     food = {**FOOD, "name_en": "Kefir", "name_tr": "Kefir", "aliases": "kefir"}
     assert [alias for _, alias, _, _ in alias_rows([food])] == ["Kefir"]

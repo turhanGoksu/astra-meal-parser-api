@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;  -- fuzzy matching (Step 6)
 
 CREATE TABLE IF NOT EXISTS foods (
     id               text PRIMARY KEY,
-    fdc_id           integer NOT NULL,
+    fdc_id           integer,           -- NULL for recipe dishes
     usda_description text NOT NULL,
     name_en          text NOT NULL,
     name_tr          text NOT NULL,
@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS foods (
     density_g_per_ml real CHECK (density_g_per_ml > 0),
     note             text NOT NULL DEFAULT ''
 );
+-- Tables created by v0.1.0 had fdc_id NOT NULL (no-op once dropped).
+ALTER TABLE foods ALTER COLUMN fdc_id DROP NOT NULL;
 
 -- One row (and one embedding) per name: Schema 2 from the design discussion.
 CREATE TABLE IF NOT EXISTS food_aliases (

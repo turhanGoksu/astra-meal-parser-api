@@ -22,7 +22,7 @@ def typed_food(row: dict[str, str]) -> dict[str, object]:
     return {
         **row,
         **{column: float(row[column]) for column in numeric},
-        "fdc_id": int(row["fdc_id"]),
+        "fdc_id": int(row["fdc_id"]) if row["fdc_id"] else None,  # None: recipe
         "density_g_per_ml": float(density) if density else None,
     }
 

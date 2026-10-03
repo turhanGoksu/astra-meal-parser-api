@@ -3,7 +3,7 @@ Haşlanmış Yumurta,egg_boiled,tr,natural;variants,food:egg,dev
 Beyaz Peynir,feta,tr,natural,food:feta,dev
 Zeytin,black_olives|green_olives,tr,natural,food:black_olives,test
 Çay,black_tea,tr,natural,food:black_tea,test
-Mercimek Çorbası,none,tr,natural,none:mercimek,dev
+Mercimek Çorbası,mercimek_corbasi,tr,natural,none:mercimek,dev
 Yarım Ekmek,white_bread,tr;noise,natural;variants,food:white_bread,test
 Izgara Köfte,none,tr,natural,none:izgara,dev
 Pilav,rice,tr,natural;variants,food:rice,dev
@@ -42,7 +42,7 @@ Peynir,feta,tr,natural,food:feta,dev
 Ogle Yemegi,none,tr;ascii;noise,natural,none:ogle,test
 Tavuk Gogsu,chicken_breast,tr;ascii,natural,food:chicken_breast,dev
 Pirinc Pilavi,rice,tr;ascii,natural,food:rice,dev
-Mercimek Corbisi,none,tr;ascii;typo,natural,none:mercimek,dev
+Mercimek Corbisi,mercimek_corbasi,tr;ascii;typo,natural,none:mercimek,dev
 Salata,none,tr,natural,none:salata,dev
 Tam Bugday Ekmegi,whole_wheat_bread,tr;ascii,natural,food:whole_wheat_bread,test
 Fistik Ezmesi,peanut_butter,tr;ascii,natural,food:peanut_butter,dev

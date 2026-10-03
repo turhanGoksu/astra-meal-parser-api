@@ -9,7 +9,13 @@ import pytest
 from astra_nutrition.amounts import Unit
 from astra_nutrition.tables import read_table
 from astra_nutrition.text import fold
-from scripts.build_food_table import find_portion, parse_spec, resolve_grams, volume_ml
+from scripts.build_food_table import (
+    find_portion,
+    parse_spec,
+    recipe_per_100g,
+    resolve_grams,
+    volume_ml,
+)
 
 PORTIONS = [
     ("slice", 29.0),
@@ -98,9 +104,38 @@ def test_resolve_grams_from_usda_or_an_explicit_assumption() -> None:
     assert resolve_grams("usda:1 piece", PORTIONS) is None
 
 
+SOURCES = ("USDA SR Legacy,", "USDA FNDDS", "Recipe from USDA SR Legacy ingredients")
+
+
 def test_every_food_names_its_source_dataset() -> None:
     for food in FOODS:
-        assert food["source"].startswith(("USDA SR Legacy,", "USDA FNDDS")), food["id"]
+        assert food["source"].startswith(SOURCES), food["id"]
+
+
+def test_recipe_macros_are_divided_by_the_cooked_weight() -> None:
+    lentils = {"kcal": 358.0, "protein": 24.0, "carbs": 63.0, "fat": 2.0}
+    water = {"kcal": 0.0, "protein": 0.0, "carbs": 0.0, "fat": 0.0}
+    parts = [(100.0, lentils), (400.0, water)]  # 500 g raw: 358 kcal in the pot
+    assert recipe_per_100g(parts, 500.0)["kcal"] == 71.6  # nothing evaporated
+    assert recipe_per_100g(parts, 400.0)["kcal"] == 89.5  # 100 g of water gone
+
+
+@pytest.mark.parametrize("cooked", [0.0, 501.0])
+def test_recipe_cooked_weight_must_be_possible(cooked: float) -> None:
+    water = {"kcal": 0.0, "protein": 0.0, "carbs": 0.0, "fat": 0.0}
+    with pytest.raises(ValueError, match="raw total 500 g"):
+        recipe_per_100g([(500.0, water)], cooked)
+
+
+def test_recipe_dishes_name_their_cooked_weight_and_assumed_portions() -> None:
+    recipes = {f["id"] for f in FOODS if f["source"].startswith("Recipe")}
+    assert recipes
+    for food in FOODS:
+        if food["id"] in recipes:
+            assert "cooked weight" in food["source"] and food["fdc_id"] == ""
+    assert all(
+        p["source"] == "assumption" for p in FOOD_PORTIONS if p["food_id"] in recipes
+    )
 
 
 def test_fndds_dishes_have_no_piece_or_slice_sizes() -> None:
