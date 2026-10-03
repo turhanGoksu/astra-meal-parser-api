@@ -9,6 +9,11 @@ A released version is never changed: fixes ship as a new version.
 
 ## [Unreleased]
 
+### Added
+
+- Gradio demo for a Hugging Face Docker Space (`demo/`). It installs the
+  hash-checked v0.1.0 wheel and runs offline, without the LLM judge.
+
 ## [0.1.0] - 2026-10-02
 
 First public release (alpha).

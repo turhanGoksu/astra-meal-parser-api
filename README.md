@@ -322,6 +322,7 @@ redistributing the data in an open-source package.
 ```text
 src/astra_nutrition/   the library (what pip installs)
 app/                   the FastAPI service on top of the library
+demo/                  Gradio demo for a Hugging Face Space (installs the released wheel)
 scripts/               table building from USDA, model download, ingest
 eval/                  evaluation harness and results
 data/                  food selection (source of the table) and eval data

@@ -74,4 +74,4 @@ target-version = "py312"
 select = ["E", "F", "W", "I", "B", "UP"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["astra_nutrition", "app", "eval", "scripts"]
+known-first-party = ["astra_nutrition", "app", "demo", "eval", "scripts"]
