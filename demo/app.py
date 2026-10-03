@@ -1,12 +1,13 @@
-"""Gradio demo of astra-nutrition for a Hugging Face Space.
+"""Gradio demo of astra-nutrition (local Docker, or a Hugging Face Space).
 
-The Space installs the released wheel (see requirements.txt), not this
-repository, so the demo shows exactly what `pip install ...@v0.1.0` gives.
-It runs offline on the Space's CPU: no LLM judge, no API keys, and the meal
-text is not stored. A public demo with the judge would spend one shared key
-for every visitor and give different results at busy times.
+The demo installs the released wheel (see requirements.txt), not this
+repository, so it shows exactly what `pip install ...@v0.1.0` gives. It runs
+offline on the CPU: no LLM judge, no API keys, and the meal text is not
+stored. A public demo with the judge would spend one shared key for every
+visitor and give different results at busy times.
 
-Run locally (from this folder, with requirements.txt installed):
+Run it with Docker (see Dockerfile), or from this folder with
+requirements.txt installed:
     python app.py        # http://127.0.0.1:7860
 """
 
@@ -31,7 +32,7 @@ INTRO = """\
 # astra-nutrition
 
 Turkish / English meal text → foods, grams and nutrition. A fine-tuned 1.5B
-parser runs **on this Space's CPU**: no API keys, and your text is not stored.
+parser runs **on this server's CPU**: no API keys, and your text is not stored.
 Every item gets a status, and the total says what it leaves out.
 
 [GitHub](https://github.com/turhanGoksu/astra-nutrition) ·

@@ -11,8 +11,9 @@ A released version is never changed: fixes ship as a new version.
 
 ### Added
 
-- Gradio demo for a Hugging Face Docker Space (`demo/`). It installs the
-  hash-checked v0.1.0 wheel and runs offline, without the LLM judge.
+- Browser demo with Gradio (`demo/`), run locally with one Docker command
+  and also ready as a Hugging Face Docker Space. It installs the hash-checked
+  v0.1.0 wheel and runs offline, without the LLM judge.
 
 ## [0.1.0] - 2026-10-02
 

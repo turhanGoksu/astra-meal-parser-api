@@ -1,6 +1,7 @@
-# Hugging Face Docker Space: the same image runs locally and on the Space.
+# The browser demo, locally or as a Hugging Face Docker Space (same image).
 #   docker build -t astra-nutrition-demo demo/
-#   docker run --rm -p 127.0.0.1:7860:7860 astra-nutrition-demo
+#   docker run --rm -p 127.0.0.1:7860:7860 \
+#     -v astra-demo-hf:/home/user/.cache/huggingface astra-nutrition-demo
 FROM python:3.12-slim
 
 # llama-cpp-python compiles llama.cpp during install (libgomp at runtime).
@@ -24,6 +25,9 @@ WORKDIR /home/user/app
 COPY --chown=user requirements.txt .
 RUN pip install --user -r requirements.txt
 COPY --chown=user app.py .
+# Created as the user, so a volume mounted here starts writable (keeps the
+# downloaded model across local restarts).
+RUN mkdir -p /home/user/.cache/huggingface
 
 EXPOSE 7860
 CMD ["python", "app.py"]

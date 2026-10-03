@@ -74,6 +74,24 @@ astra-nutrition "..." --model ./model.gguf        # use a local GGUF file
 Exit codes: `0` analyzed, `1` the parser could not read the meal, `2` bad input
 (for example a food file with problems).
 
+### Browser demo
+
+A small Gradio page (`demo/`) with example meals. It installs the released
+v0.1.0 wheel (hash-checked) and runs offline, without the LLM judge:
+
+![The browser demo: one item ok, one estimated from a default portion, one unmatched and left out of the total](docs/demo.png)
+
+```bash
+docker build -t astra-nutrition-demo demo/
+docker run --rm -p 127.0.0.1:7860:7860 \
+  -v astra-demo-hf:/home/user/.cache/huggingface astra-nutrition-demo
+# http://127.0.0.1:7860
+```
+
+The volume keeps the downloaded model, so only the first start waits for it.
+`demo/` is also a ready Hugging Face Docker Space, but there is no hosted link:
+Docker and Gradio Spaces on free CPU need a paid PRO subscription.
+
 ## Web API
 
 A thin FastAPI layer over the library (`app/`). Run it from the project root
@@ -322,7 +340,7 @@ redistributing the data in an open-source package.
 ```text
 src/astra_nutrition/   the library (what pip installs)
 app/                   the FastAPI service on top of the library
-demo/                  Gradio demo for a Hugging Face Space (installs the released wheel)
+demo/                  browser demo (Gradio, Docker); installs the released wheel
 scripts/               table building from USDA, model download, ingest
 eval/                  evaluation harness and results
 data/                  food selection (source of the table) and eval data
