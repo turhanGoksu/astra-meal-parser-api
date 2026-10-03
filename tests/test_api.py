@@ -15,7 +15,7 @@ from tests.test_parser import FakeLlm
 
 OUTPUT = (
     '{"items": [{"name": "Yumurta", "amount": "2"}, '
-    '{"name": "Baklava", "amount": "1 dilim"}]}'
+    '{"name": "Kokoreç", "amount": "1 dilim"}]}'
 )
 
 
@@ -65,7 +65,7 @@ def client(healthy: bool = True, logger: FakeLogger | None = None) -> TestClient
 
 def test_analyze_returns_items_statuses_and_totals() -> None:
     with client() as c:
-        response = c.post("/analyze", json={"meal_text": "2 yumurta, 1 dilim baklava"})
+        response = c.post("/analyze", json={"meal_text": "2 yumurta, 1 dilim kokoreç"})
     assert response.status_code == 200
     data = response.json()
     assert [i["status"] for i in data["items"]] == ["ok", "unmatched"]
@@ -97,7 +97,7 @@ def test_health_checks_only_the_database() -> None:
 def test_each_analysis_is_logged_after_the_response() -> None:
     logger = FakeLogger()
     with client(logger=logger) as c:
-        c.post("/analyze", json={"meal_text": "2 yumurta, 1 dilim baklava"})
+        c.post("/analyze", json={"meal_text": "2 yumurta, 1 dilim kokoreç"})
     result, latency_ms = logger.written[0]
     assert result.totals.kcal == 143.0
     assert latency_ms >= 0

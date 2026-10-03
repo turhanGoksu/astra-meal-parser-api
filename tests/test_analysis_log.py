@@ -6,7 +6,7 @@ from app.analysis_log import INSERT_ANALYSIS, INSERT_ITEM, AnalysisLogger
 from astra_nutrition import Analyzer
 
 RESULT = Analyzer().analyze_items(
-    [("Yumurta", "2"), ("Baklava", "1 dilim")], meal_text="2 yumurta, 1 dilim baklava"
+    [("Yumurta", "2"), ("Kokoreç", "1 dilim")], meal_text="2 yumurta, 1 dilim kokoreç"
 )
 
 
@@ -63,7 +63,7 @@ def test_analysis_and_items_are_written_in_one_transaction() -> None:
 
     _, sql, analysis = pool.log[3]
     assert sql == INSERT_ANALYSIS
-    assert analysis[0] == "2 yumurta, 1 dilim baklava"
+    assert analysis[0] == "2 yumurta, 1 dilim kokoreç"
     assert analysis[3] == 12.5
     assert analysis[-1] == "groq:m"
 

@@ -45,7 +45,7 @@ def test_default_library_matcher_needs_no_embedder() -> None:
     matcher = FoodMatcher(INDEX, None, config)
     assert matcher.match("Tavuk Göğsü").method == MatchMethod.EXACT
     assert matcher.match("tavuk gösü").method == MatchMethod.FUZZY
-    assert matcher.match("baklava").matched is False
+    assert matcher.match("kokoreç").matched is False
 
 
 def test_embedding_stage_without_embedder_fails_fast() -> None:

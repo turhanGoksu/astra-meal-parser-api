@@ -9,7 +9,7 @@ import pytest
 from astra_nutrition.amounts import Unit
 from astra_nutrition.tables import read_table
 from astra_nutrition.text import fold
-from scripts.build_food_table import find_portion, parse_spec, volume_ml
+from scripts.build_food_table import find_portion, parse_spec, resolve_grams, volume_ml
 
 PORTIONS = [
     ("slice", 29.0),
@@ -86,3 +86,25 @@ def test_portions_reference_known_foods_and_units() -> None:
         assert portion["source"] == "assumption" or portion["source"].startswith(
             "usda: "
         )
+
+
+def test_resolve_grams_from_usda_or_an_explicit_assumption() -> None:
+    assert resolve_grams("usda:cup", PORTIONS) == (
+        "cup (8 fl oz)",
+        237.0,
+        "usda: cup (8 fl oz)",
+    )
+    assert resolve_grams("200", PORTIONS) == ("", 200.0, "assumption")
+    assert resolve_grams("usda:1 piece", PORTIONS) is None
+
+
+def test_every_food_names_its_source_dataset() -> None:
+    for food in FOODS:
+        assert food["source"].startswith(("USDA SR Legacy,", "USDA FNDDS")), food["id"]
+
+
+def test_fndds_dishes_have_no_piece_or_slice_sizes() -> None:
+    # FNDDS pieces are US sizes; "adet" or "dilim" must read as unknown (Design R).
+    fndds = {food["id"] for food in FOODS if food["source"].startswith("USDA FNDDS")}
+    units = {p["unit"] for p in FOOD_PORTIONS if p["food_id"] in fndds}
+    assert fndds and units <= {Unit.CUP, Unit.TABLESPOON, Unit.TEASPOON}

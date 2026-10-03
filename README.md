@@ -188,9 +188,9 @@ with the reason, is not counted, and makes `totals.complete` false
 (`totals.rejected` counts them). `MealParser(..., check_grounding=False)`
 turns the check off.
 
-Every matched item also has `food_source` ("USDA SR Legacy, fdc_id …" or the
-source you gave for your own foods), `match_method` (`exact`, `fuzzy`, `llm`)
-and `amount_detail` (how the grams were obtained).
+Every matched item also has `food_source` ("USDA SR Legacy, fdc_id …",
+"USDA FNDDS …" or the source you gave for your own foods), `match_method`
+(`exact`, `fuzzy`, `llm`) and `amount_detail` (how the grams were obtained).
 
 ## Add your own foods
 
@@ -294,14 +294,17 @@ and `python -m eval.run_eval report`; judge answers are cached in
 
 | Part | Source | License |
 |---|---|---|
-| Food table (128 foods, 455 names) | USDA FoodData Central, SR Legacy (2018-04), curated | public domain (CC0) |
+| Food table (135 foods, 475 names) | USDA FoodData Central: SR Legacy (2018-04) for single foods, FNDDS (2024-10-31) for 7 mixed dishes; curated | public domain (CC0) |
 | Parser model | [Turhan123/astra-meal-parser-gguf](https://huggingface.co/Turhan123/astra-meal-parser-gguf) (Qwen2.5-1.5B, Q4_K_M) | Apache-2.0 |
 | Embeddings (judge only) | `intfloat/multilingual-e5-small` | MIT |
 | Code | this repository | Apache-2.0 |
 
 Every gram value in `food_portions.csv` is either a USDA household measure
 (the source text is stored) or an explicit, labeled assumption (for example a
-Turkish tea glass of 100 ml). Some Turkish dishes are mapped to their base
+Turkish tea glass of 100 ml). FNDDS dishes (baklava, yaprak sarma, biber
+dolması, falafel, tabule) keep only weight and volume measures: FNDDS pieces
+are US sizes (one piece of baklava is 80 g), so `1 dilim baklava` reads as
+`amount_unknown` instead of a wrong number, while `100 g baklava` is counted. Some Turkish dishes are mapped to their base
 ingredient and documented as approximations: `pilav` → plain cooked rice,
 `kuru fasulye` → boiled white beans (added oil is not counted). Generic words
 have documented defaults: `peynir` → white cheese (feta), `cheese` → cheddar.
@@ -339,9 +342,10 @@ redistributing the data in an open-source package.
 
 ## Roadmap
 
-- **v0.2:** more Turkish coverage from USDA FNDDS (public domain: baklava,
-  stuffed grape leaves, shish kebab, "fat added" variants) and recipe-based
-  dishes computed from USDA ingredients; a larger evaluation set.
+- **v0.2:** Turkish dishes without a USDA equivalent (mercimek çorbası,
+  lahmacun, ayran, menemen …) computed from documented Turkish recipes with
+  USDA ingredients; a larger evaluation set. (Dishes FNDDS has as they are,
+  such as baklava, are already in the table.)
 - Send fuzzy matches that add words to the alias (`Etli Kuru Fasulye`) to the
   judge; measure on a new dataset.
 

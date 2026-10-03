@@ -17,7 +17,7 @@ def test_statuses_grams_and_totals() -> None:
         [
             ("Yumurta", "2"),
             ("Pilav", "biraz"),
-            ("Baklava", "1 dilim"),
+            ("Kokoreç", "1 dilim"),
             ("Muz", "bir tutam"),
         ]
     )
@@ -25,7 +25,7 @@ def test_statuses_grams_and_totals() -> None:
     assert rows == [
         ("Yumurta", ItemStatus.OK, 100.0),  # 2 x 50 g
         ("Pilav", ItemStatus.ESTIMATED, 150.0),  # vague -> default portion
-        ("Baklava", ItemStatus.UNMATCHED, None),  # not in the table
+        ("Kokoreç", ItemStatus.UNMATCHED, None),  # not in the table
         ("Muz", ItemStatus.AMOUNT_UNKNOWN, None),  # unreadable amount
     ]
     totals = result.totals
@@ -45,7 +45,7 @@ def test_amount_that_repeats_the_item_name_gives_the_same_grams() -> None:
 
 
 def test_unmatched_item_keeps_its_best_candidate_but_no_nutrition() -> None:
-    item = ANALYZER.analyze_items([("Baklava", "1 dilim")]).items[0]
+    item = ANALYZER.analyze_items([("Kokoreç", "1 dilim")]).items[0]
     assert item.nutrition is None
     assert item.food_id is None
     assert item.best_candidate_food_id is not None  # visible, never counted

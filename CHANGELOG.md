@@ -19,6 +19,13 @@ A released version is never changed: fixes ship as a new version.
   counted. On by default (`MealParser(..., check_grounding=False)` turns it
   off). The CLI lists rejected items.
 - `totals.rejected`: the number of items the parser checks refused.
+- 7 mixed dishes from USDA FNDDS (public domain) that exist there as they
+  are: baklava, zeytinyağlı and etli yaprak sarma, etli and zeytinyağlı biber
+  dolması, falafel, tabule. FNDDS pieces are US sizes, so these dishes have
+  only weight and volume measures: `1 dilim baklava` is `amount_unknown`,
+  `100 g baklava` is counted. The table has 135 foods; the 193 evaluation
+  names match exactly as before.
+- `foods.csv` has a `source` column naming the dataset and FDC id.
 
 ### Changed
 
