@@ -15,6 +15,10 @@ A released version is never changed: fixes ship as a new version.
   and also ready as a Hugging Face Docker Space. It installs the hash-checked
   v0.1.0 wheel and runs offline, without the LLM judge.
 
+### Changed
+
+- CI runs on a pinned `ubuntu-24.04` instead of the moving `ubuntu-latest`.
+
 ## [0.1.0] - 2026-10-02
 
 First public release (alpha).

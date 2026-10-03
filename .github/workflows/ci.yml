@@ -2,6 +2,10 @@
 # integration tests and a package build, each on a fresh runner. No job
 # downloads the parser or the embedding model: model output depends on the
 # machine, so tests use fakes and check only our own code.
+#
+# Runners are pinned (ubuntu-24.04, not ubuntu-latest): "latest" moves on
+# GitHub's schedule, and a red run should come from our own change. Move to a
+# newer image in a commit of its own.
 name: CI
 
 on:
@@ -24,7 +28,7 @@ env:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -36,7 +40,7 @@ jobs:
       - run: ruff format --check .
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -51,7 +55,7 @@ jobs:
         run: pytest
 
   integration:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       db:
         image: pgvector/pgvector:0.8.6-pg17
@@ -84,7 +88,7 @@ jobs:
         run: pytest -m integration
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
